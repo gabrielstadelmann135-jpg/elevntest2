@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ELEVN — Every player deserves a chance.</title>
+<meta name="description" content="ELEVN is the world's football passport. Discover talent, build clubs, change careers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+
+<!-- Firebase SDKs (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+
+<style>
+/* ============================================================
+   ELEVN — Design System
+   ============================================================ */
+:root{
+  --black:#000;--near-black:#080808;--surface:#111;--surface2:#181818;
+  --surface3:#222;--surface4:#2a2a2a;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--border3:rgba(255,255,255,.22);
+  --white:#fff;--white90:rgba(255,255,255,.9);--white60:rgba(255,255,255,.6);
+  --white35:rgba(255,255,255,.35);--white15:rgba(255,255,255,.15);--white08:rgba(255,255,255,.08);
+  --green:#16a34a;--green-light:#22c55e;--green-bg:rgba(34,197,94,.1);--green-border:rgba(34,197,94,.2);
+  --blue:#2563eb;--blue-light:#3b82f6;--blue-bg:rgba(59,130,246,.1);--blue-border:rgba(59,130,246,.2);
+  --gold:#d97706;--gold-light:#f59e0b;--gold-bg:rgba(245,158,11,.1);--gold-border:rgba(245,158,11,.2);
+  --red:#dc2626;--red-light:#ef4444;--red-bg:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.2);
+  --purple-bg:rgba(168,85,247,.1);--purple:#a855f7;
+  --r:10px;--r-lg:16px;--r-xl:22px;--r-full:9999px;
+  --nav-h:60px;--sidebar-w:236px;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--black);color:var(--white);
+  -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface4);border-radius:2px}
+::selection{background:rgba(255,255,255,.2)}
+
+/* ── Typography ── */
+.t-display{font-size:clamp(52px,8.5vw,108px);font-weight:900;line-height:.96;letter-spacing:-.04em}
+.t-h1{font-size:clamp(30px,4.5vw,54px);font-weight:800;line-height:1.05;letter-spacing:-.03em}
+.t-h2{font-size:clamp(22px,3vw,34px);font-weight:700;letter-spacing:-.025em;line-height:1.1}
+.t-h3{font-size:18px;font-weight:600;letter-spacing:-.015em}
+.t-h4{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.t-body{font-size:15px;line-height:1.75;color:var(--white60)}
+.t-sm{font-size:13px;line-height:1.5;color:var(--white35)}
+.t-xs{font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--white35)}
+.t-mono{font-variant-numeric:tabular-nums}
+
+/* ── Pages ── */
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:7px;border-radius:var(--r);font-size:14px;
+  font-weight:600;padding:10px 20px;transition:all .18s var(--ease);white-space:nowrap;cursor:pointer}
+.btn-primary{background:var(--white);color:var(--black)}
+.btn-primary:hover{background:var(--white90);transform:translateY(-1px)}
+.btn-primary:active{transform:scale(.98)}
+.btn-secondary{background:transparent;color:var(--white);border:1px solid var(--border2)}
+.btn-secondary:hover{background:var(--white08);border-color:var(--border3)}
+.btn-ghost{background:transparent;color:var(--white60);padding:8px 14px}
+.btn-ghost:hover{color:var(--white);background:var(--white08)}
+.btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
+.btn-lg{padding:14px 30px;font-size:16px;border-radius:12px}
+.btn-icon{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;
+  justify-content:center;border-radius:8px;flex-shrink:0}
+.btn-danger{background:var(--red-bg);color:var(--red-light);border:1px solid var(--red-border)}
+.btn-danger:hover{background:rgba(239,68,68,.18)}
+.btn-success{background:var(--green-bg);color:var(--green-light);border:1px solid var(--green-border)}
+
+/* ── Inputs ── */
+.inp{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--white);font-size:14px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--border3)}
+.inp::placeholder{color:var(--white35)}
+.inp-group{display:flex;flex-direction:column;gap:5px}
+.inp-label{font-size:12px;font-weight:500;color:var(--white60)}
+.inp-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,.4)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+.inp-search-wrap{position:relative}
+.inp-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--white35);pointer-events:none}
+.inp-search{padding-left:38px}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px}
+.card-sm{padding:14px}
+.card-hover{transition:border-color .2s,transform .2s var(--ease)}
+.card-hover:hover{border-color:var(--border2);transform:translateY(-2px)}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:var(--r-full);
+  font-size:11px;font-weight:600;letter-spacing:.04em}
+.badge-green{background:var(--green-bg);color:var(--green-light);border:1px solid var(--green-border)}
+.badge-blue{background:var(--blue-bg);color:var(--blue-light);border:1px solid var(--blue-border)}
+.badge-gold{background:var(--gold-bg);color:var(--gold-light);border:1px solid var(--gold-border)}
+.badge-red{background:var(--red-bg);color:var(--red-light);border:1px solid var(--red-border)}
+.badge-white{background:var(--white08);color:var(--white60);border:1px solid var(--border)}
+.badge-purple{background:var(--purple-bg);color:var(--purple)}
+
+/* ── Avatar ── */
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;flex-shrink:0;overflow:hidden;background:var(--surface3)}
+.av img{width:100%;height:100%;object-fit:cover}
+.av-32{width:32px;height:32px;font-size:12px}
+.av-40{width:40px;height:40px;font-size:15px}
+.av-56{width:56px;height:56px;font-size:20px}
+.av-80{width:80px;height:80px;font-size:28px}
+.av-120{width:120px;height:120px;font-size:42px;border:3px solid var(--border2)}
+
+/* ── Navigation ── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--nav-h);
+  display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid var(--border)}
+.nav-logo{font-size:19px;font-weight:900;letter-spacing:-.04em;cursor:pointer;user-select:none}
+.nav-center{display:flex;align-items:center;gap:2px}
+.nav-link{padding:7px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--white60);
+  cursor:pointer;transition:all .15s}
+.nav-link:hover{color:var(--white);background:var(--white08)}
+.nav-link.active{color:var(--white)}
+.nav-right{display:flex;align-items:center;gap:8px}
+
+/* ── Sidebar ── */
+.sidebar{position:fixed;top:var(--nav-h);left:0;bottom:0;width:var(--sidebar-w);
+  background:var(--near-black);border-right:1px solid var(--border);z-index:100;
+  display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-body{padding:12px;flex:1;display:flex;flex-direction:column;gap:1px}
+.sidebar-section{padding:14px 12px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--white35)}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;
+  font-size:13px;font-weight:500;color:var(--white60);cursor:pointer;transition:all .15s;
+  position:relative}
+.sb-item:hover{color:var(--white);background:var(--white08)}
+.sb-item.active{color:var(--white);background:var(--white08)}
+.sb-item svg{width:17px;height:17px;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--blue-light);color:#fff;font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:var(--r-full)}
+
+/* ── Bottom nav ── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(0,0,0,.92);backdrop-filter:blur(24px);border-top:1px solid var(--border);
+  padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+.bn-items{display:flex;justify-content:space-around}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 16px;
+  cursor:pointer;color:var(--white35);transition:color .15s}
+.bn-item.active{color:var(--white)}
+.bn-item svg{width:22px;height:22px}
+.bn-label{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+
+/* ── Dashboard layout ── */
+.dash-wrap{display:flex}
+.dash-main{flex:1;margin-left:var(--sidebar-w);padding:calc(var(--nav-h) + 28px) 28px 40px}
+.dash-title{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.dash-sub{font-size:14px;color:var(--white35);margin-bottom:28px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px}
+.stat-val{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.stat-lbl{font-size:12px;color:var(--white35);margin-top:4px}
+.stat-delta{font-size:12px;color:var(--green-light);margin-top:6px}
+
+/* ── Grid helpers ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+
+/* ── Tab content ── */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── Tabs ── */
+.tabs-bar{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:3px}
+.tab-pill{padding:7px 16px;border-radius:7px;font-size:13px;font-weight:500;color:var(--white60);
+  cursor:pointer;transition:all .15s}
+.tab-pill.active{background:var(--surface3);color:var(--white)}
+
+/* ── Modal ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);
+  backdrop-filter:blur(12px);z-index:300;display:flex;align-items:center;
+  justify-content:center;padding:20px;opacity:0;transition:opacity .2s;pointer-events:none}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:28px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+  transform:translateY(16px) scale(.98);transition:transform .25s var(--ease)}
+.modal-backdrop.open .modal-box{transform:none}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-close{width:30px;height:30px;border-radius:50%;background:var(--surface3);
+  display:flex;align-items:center;justify-content:center;color:var(--white60);
+  cursor:pointer;transition:all .15s}
+.modal-close:hover{background:var(--surface4);color:var(--white)}
+
+/* ── Player card ── */
+.player-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:18px;cursor:pointer;transition:all .2s var(--ease)}
+.player-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.pc-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.pc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.pc-stat{background:var(--surface2);border-radius:8px;padding:8px;text-align:center}
+.pc-stat-val{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.pc-stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--white35);margin-top:2px}
+
+/* ── Progress bar ── */
+.progress{height:3px;background:var(--surface3);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:width .6s var(--ease)}
+
+/* ── Toast ── */
+.toast-stack{position:fixed;top:72px;right:18px;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);
+  padding:11px 16px;font-size:13px;display:flex;align-items:center;gap:9px;
+  min-width:260px;max-width:340px;pointer-events:all;
+  animation:toastIn .28s var(--ease) forwards}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+.toast.out{animation:toastOut .25s var(--ease) forwards}
+@keyframes toastOut{to{transform:translateX(110%);opacity:0}}
+
+/* ── Auth ── */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:var(--black)}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:36px;width:100%;max-width:420px}
+.auth-logo{font-size:22px;font-weight:900;letter-spacing:-.04em;margin-bottom:24px;cursor:pointer}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0}
+.auth-divider-line{flex:1;height:1px;background:var(--border)}
+.auth-divider-label{font-size:12px;color:var(--white35)}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  padding:11px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;
+  color:var(--white);font-size:14px;font-weight:500;cursor:pointer;transition:background .15s;
+  font-family:'Inter',sans-serif}
+.google-btn:hover{background:var(--white08)}
+
+/* ── Profile cover ── */
+.profile-cover{height:200px;background:linear-gradient(135deg,var(--surface2),var(--surface3));
+  position:relative;overflow:hidden}
+.profile-cover-noise{position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4'/%3E%3C/filter%3E%3Crect width='60' height='60' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  opacity:.5}
+.profile-pattern{position:absolute;inset:0;
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.015) 0px,rgba(255,255,255,.015) 1px,transparent 1px,transparent 24px)}
+.profile-av-wrap{position:absolute;bottom:-52px;left:28px}
+
+/* ── Video card ── */
+.video-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;cursor:pointer;transition:all .2s var(--ease)}
+.video-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.video-thumb{height:152px;background:var(--surface2);position:relative;display:flex;
+  align-items:center;justify-content:center;overflow:hidden}
+.video-play{width:44px;height:44px;background:rgba(255,255,255,.92);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.video-info{padding:12px 14px}
+
+/* ── Rank row ── */
+.rank-row{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:var(--r);
+  cursor:pointer;transition:background .15s}
+.rank-row:hover{background:var(--white08)}
+.rank-num{font-size:17px;font-weight:800;min-width:36px;color:var(--white35);font-variant-numeric:tabular-nums}
+.rank-num.r1{color:var(--gold-light)}
+.rank-num.r2{color:var(--white60)}
+.rank-num.r3{color:#cd7f32}
+
+/* ── Notif ── */
+.notif-item{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);
+  border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:border-color .15s}
+.notif-item:hover{border-color:var(--border2)}
+.notif-dot{width:7px;height:7px;background:var(--blue-light);border-radius:50%;flex-shrink:0;margin-top:5px}
+
+/* ── Upload zone ── */
+.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--r-lg);padding:36px;
+  text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.upload-zone:hover{border-color:var(--border3);background:var(--white08)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+
+/* ── Filter chip ── */
+.chip{padding:5px 13px;border-radius:var(--r-full);border:1px solid var(--border);font-size:13px;
+  cursor:pointer;color:var(--white60);background:transparent;font-family:inherit;transition:all .15s}
+.chip:hover{border-color:var(--border2);color:var(--white)}
+.chip.on{border-color:var(--border3);color:var(--white);background:var(--white08)}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--white35);
+  letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:13px 14px;border-bottom:1px solid var(--border);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--white08)}
+
+/* ── Landing ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:calc(var(--nav-h) + 60px) 20px 80px;
+  position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 0%,transparent 100%)}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 13px;
+  border-radius:var(--r-full);border:1px solid var(--border2);font-size:12px;font-weight:500;
+  color:var(--white60);margin-bottom:28px;background:var(--white08)}
+.pulse{width:6px;height:6px;background:var(--green-light);border-radius:50%;
+  animation:pulse 2.2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+.hero-ctas{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:36px}
+.marquee-wrap{overflow:hidden;padding:50px 0;border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border)}
+.marquee{display:flex;gap:14px;animation:scrollL 28s linear infinite;width:max-content}
+.marquee:hover{animation-play-state:paused}
+@keyframes scrollL{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-tag{padding:8px 18px;border-radius:var(--r-full);border:1px solid var(--border);
+  font-size:12px;white-space:nowrap;color:var(--white60)}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1px;background:var(--border);border:1px solid var(--border);
+  border-radius:var(--r-lg);overflow:hidden}
+.feature-cell{background:var(--black);padding:28px}
+.feature-icon{width:38px;height:38px;margin-bottom:14px}
+
+/* ── Admin ── */
+.admin-wrap{display:flex}
+.admin-side{width:200px;background:var(--near-black);border-right:1px solid var(--border);
+  padding:calc(var(--nav-h)+16px) 10px 24px;position:fixed;top:0;left:0;bottom:0}
+.admin-main{margin-left:200px;padding:calc(var(--nav-h)+24px) 28px 40px;flex:1}
+.admin-si{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--white60);cursor:pointer;transition:all .15s}
+.admin-si:hover{color:var(--white);background:var(--white08)}
+.admin-si.active{color:var(--white);background:var(--white08)}
+
+/* ── Spinner ── */
+.spinner{width:18px;height:18px;border:2px solid var(--border);
+  border-top-color:var(--white);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Dropdown ── */
+.dropdown{position:relative}
+.dd-menu{position:absolute;top:calc(100%+8px);right:0;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--r);padding:6px;min-width:168px;
+  z-index:300;box-shadow:0 16px 48px rgba(0,0,0,.7);display:none}
+.dd-menu.open{display:block}
+.dd-item{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:8px;
+  font-size:13px;color:var(--white60);cursor:pointer;transition:all .15s}
+.dd-item:hover{background:var(--white08);color:var(--white)}
+.dd-item.danger{color:var(--red-light)}
+.dd-divider{border:none;border-top:1px solid var(--border);margin:4px 0}
+
+/* ── Empty / error ── */
+.empty-state{text-align:center;padding:56px 24px;color:var(--white35)}
+.error-msg{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--r);
+  padding:10px 14px;font-size:13px;color:var(--red-light);margin-top:10px;display:none}
+
+/* ── Loading overlay ── */
+.loading-screen{position:fixed;inset:0;background:var(--black);z-index:1000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .4s}
+.loading-screen.hidden{opacity:0;pointer-events:none}
+.loading-logo{font-size:28px;font-weight:900;letter-spacing:-.04em}
+
+/* ── Notif badge ── */
+.notif-badge{position:absolute;top:-3px;right:-3px;width:15px;height:15px;
+  background:var(--red-light);border-radius:50%;font-size:9px;font-weight:700;
+  display:none;align-items:center;justify-content:center;border:2px solid var(--black)}
+.notif-badge.show{display:flex}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .nav-center{display:none}
+  .sidebar{display:none}
+  .bottom-nav{display:block}
+  .dash-main{margin-left:0;padding:calc(var(--nav-h)+16px) 14px 100px}
+  .g2,.g3{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .profile-cover{height:160px}
+  .profile-av-wrap{left:16px;bottom:-44px}
+  .av-120{width:96px;height:96px;font-size:34px}
+  .t-display{font-size:48px}
+  .hero{padding-top:calc(var(--nav-h)+40px)}
+  .admin-side{display:none}
+  .admin-main{margin-left:0;padding-top:calc(var(--nav-h)+16px)}
+  .modal-box{padding:20px}
+}
+@media(max-width:480px){
+  .g-auto{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOADING SCREEN ═══════════════════ -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">ELEVN</div>
+  <div class="spinner" style="width:22px;height:22px"></div>
+</div>
+
+<!-- ═══════════════════ TOAST STACK ═══════════════════ -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+<!-- Edit Profile Modal -->
+<div class="modal-backdrop" id="modalEditProfile" onclick="closeModalOnBg(event,'modalEditProfile')">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="t-h3">Edit profile</span>
+      <button class="modal-close" onclick="closeModal('modalEditProfile')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:13px">
+      <div style="text-align:center;margin-bottom:6px">
+        <div id="modalAvatar" class="av av-80" style="margin:0 auto 10px"></div>
+        <button class="btn btn-secondary btn-sm" onclick="triggerPhotoUpload()">Change photo</button>
+        <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="inp-group"><label class="inp-label">First name</label><input id="ep-first" class="inp" type="text"></div>
+        <div class="inp-group"><label class="inp-label">Last name</label><input id="ep-last" class="inp" type="text"></div>
+      </div>
+      <div class="inp-group"><label class="inp-label">Position</label>
+        <select id="ep-pos" class="inp inp-select">
+          <option value="">Select position</option>
+          <option>Goalkeeper</option><option>Defender</option><option>Midfielder</option>
+          <option>Winger</option><option>Striker</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="inp-group"><label class="inp-label">Country</label><input id="ep-country" class="inp" type="text" placeholder="France"></div>
+        <div class="inp-group"><label class="inp-label">City</label><input id="ep-city" class="inp" type="text" placeholder="Paris"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="inp-group"><label class="inp-label">Age</label><input id="ep-age" class="inp" type="number" min="12" max="50"></div>
+        <div class="inp-group"><label class="inp-label">Height cm</label><input id="ep-height" class="inp" type="number" min="140" max="220"></div>
+        <div class="inp-group"><label class="inp-label">Weight kg</label><input id="ep-weight" class="inp" type="number" min="40" max="120"></div>
+      </div>
+      <div class="inp-group"><label class="inp-label">Strong foot</label>
+        <select id="ep-foot" class="inp inp-select"><option>Right</option><option>Left</option><option>Both</option></select>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:13px">
+        <div class="t-xs" style="margin-bottom:10px">Season statistics</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="inp-group"><label class="inp-label">Matches played</label><input id="ep-matches" class="inp" type="number" min="0"></div>
+          <div class="inp-group"><label class="inp-label">Goals</label><input id="ep-goals" class="inp" type="number" min="0"></div>
+          <div class="inp-group"><label class="inp-label">Assists</label><input id="ep-assists" class="inp" type="number" min="0"></div>
+          <div class="inp-group"><label class="inp-label">Minutes played</label><input id="ep-mins" class="inp" type="number" min="0"></div>
+        </div>
+      </div>
+      <div class="inp-group"><label class="inp-label">Current club</label><input id="ep-club" class="inp" type="text" placeholder="FC Paris Academy"></div>
+      <div class="inp-group"><label class="inp-label">Bio (optional)</label>
+        <textarea id="ep-bio" class="inp" rows="3" placeholder="Tell scouts about yourself..." style="resize:vertical"></textarea>
+      </div>
+      <div id="ep-error" class="error-msg"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" id="epSaveBtn" onclick="saveProfile()">
+        Save changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Video Modal -->
+<div class="modal-backdrop" id="modalUploadVideo" onclick="closeModalOnBg(event,'modalUploadVideo')">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="t-h3">Upload video</span>
+      <button class="modal-close" onclick="closeModal('modalUploadVideo')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:13px">
+      <div class="upload-zone" id="videoDropZone">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color:var(--white35);margin:0 auto 10px"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        <div style="font-size:14px;font-weight:500;margin-bottom:3px">Drop video or click to browse</div>
+        <div class="t-sm">MP4 · MOV · AVI — max 500 MB</div>
+        <input type="file" accept="video/*" onchange="handleVideoFileSelect(event)">
+      </div>
+      <div id="videoFileInfo" style="display:none;padding:10px;background:var(--surface2);border-radius:var(--r);font-size:13px"></div>
+      <div class="inp-group"><label class="inp-label">Title *</label><input id="vt-title" class="inp" type="text" placeholder="Season highlights 2025..."></div>
+      <div class="inp-group"><label class="inp-label">Type</label>
+        <select id="vt-type" class="inp inp-select">
+          <option>Highlights</option><option>Full match</option><option>Training</option><option>Goal reel</option>
+        </select>
+      </div>
+      <div class="inp-group"><label class="inp-label">Description</label>
+        <textarea id="vt-desc" class="inp" rows="2" placeholder="Short description..." style="resize:vertical"></textarea>
+      </div>
+      <div id="vt-progress" style="display:none">
+        <div style="font-size:12px;color:var(--white60);margin-bottom:6px">Uploading...</div>
+        <div class="progress"><div class="progress-fill" id="vtProgressBar" style="width:0%;background:var(--white)"></div></div>
+      </div>
+      <div id="vt-error" class="error-msg"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" id="vtUploadBtn" onclick="uploadVideo()">
+        Upload video
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Player Detail Modal -->
+<div class="modal-backdrop" id="modalPlayer" onclick="closeModalOnBg(event,'modalPlayer')">
+  <div class="modal-box" style="max-width:540px">
+    <div class="modal-hdr">
+      <span class="t-h3">Player profile</span>
+      <button class="modal-close" onclick="closeModal('modalPlayer')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="modalPlayerBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PAGE: LANDING ═══════════════════ -->
+<div id="page-landing" class="page active">
+  <nav class="nav">
+    <div class="nav-logo" onclick="goTo('landing')">ELEVN</div>
+    <div class="nav-center">
+      <span class="nav-link" onclick="scrollToSection('how-it-works')">How it works</span>
+      <span class="nav-link" onclick="scrollToSection('discover-section')">Discover</span>
+      <span class="nav-link" onclick="scrollToSection('stats-section')">Stats</span>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-ghost btn-sm" onclick="goTo('login')">Sign in</button>
+      <button class="btn btn-primary btn-sm" onclick="goTo('register')">Join ELEVN</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;max-width:900px">
+      <div class="hero-badge"><div class="pulse"></div>The world's football passport</div>
+      <h1 class="t-display">Every player<br>deserves a chance.</h1>
+      <p class="t-body" style="max-width:520px;margin-top:18px;font-size:17px">
+        Discover talent. Build clubs. Change careers.<br>
+        190 countries. One global platform.
+      </p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary btn-lg" onclick="goTo('register')">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          Create free profile
+        </button>
+        <button class="btn btn-secondary btn-lg" onclick="goTo('discover')">Discover talent</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee">
+      <span class="marquee-tag">🇧🇷 Brazil</span><span class="marquee-tag">🇫🇷 France</span><span class="marquee-tag">🇦🇷 Argentina</span><span class="marquee-tag">🇩🇪 Germany</span><span class="marquee-tag">🇪🇸 Spain</span><span class="marquee-tag">🇳🇬 Nigeria</span><span class="marquee-tag">🇯🇵 Japan</span><span class="marquee-tag">🇺🇸 USA</span><span class="marquee-tag">🇬🇧 England</span><span class="marquee-tag">🇮🇹 Italy</span><span class="marquee-tag">🇵🇹 Portugal</span><span class="marquee-tag">🇲🇽 Mexico</span><span class="marquee-tag">🇸🇳 Senegal</span><span class="marquee-tag">🇰🇷 Korea</span><span class="marquee-tag">🇳🇱 Netherlands</span><span class="marquee-tag">🇨🇮 Côte d'Ivoire</span><span class="marquee-tag">🇪🇬 Egypt</span><span class="marquee-tag">🇲🇦 Morocco</span>
+      <span class="marquee-tag">🇧🇷 Brazil</span><span class="marquee-tag">🇫🇷 France</span><span class="marquee-tag">🇦🇷 Argentina</span><span class="marquee-tag">🇩🇪 Germany</span><span class="marquee-tag">🇪🇸 Spain</span><span class="marquee-tag">🇳🇬 Nigeria</span><span class="marquee-tag">🇯🇵 Japan</span><span class="marquee-tag">🇺🇸 USA</span><span class="marquee-tag">🇬🇧 England</span><span class="marquee-tag">🇮🇹 Italy</span><span class="marquee-tag">🇵🇹 Portugal</span><span class="marquee-tag">🇲🇽 Mexico</span><span class="marquee-tag">🇸🇳 Senegal</span><span class="marquee-tag">🇰🇷 Korea</span><span class="marquee-tag">🇳🇱 Netherlands</span><span class="marquee-tag">🇨🇮 Côte d'Ivoire</span><span class="marquee-tag">🇪🇬 Egypt</span><span class="marquee-tag">🇲🇦 Morocco</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <section id="stats-section" style="max-width:1100px;margin:0 auto;padding:80px 20px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+      <div style="background:var(--black);padding:28px;text-align:center"><div style="font-size:36px;font-weight:900;letter-spacing:-.03em" id="statPlayers">—</div><div class="t-xs" style="margin-top:6px">Players</div></div>
+      <div style="background:var(--black);padding:28px;text-align:center"><div style="font-size:36px;font-weight:900;letter-spacing:-.03em" id="statClubs">—</div><div class="t-xs" style="margin-top:6px">Clubs</div></div>
+      <div style="background:var(--black);padding:28px;text-align:center"><div style="font-size:36px;font-weight:900;letter-spacing:-.03em">190</div><div class="t-xs" style="margin-top:6px">Countries</div></div>
+      <div style="background:var(--black);padding:28px;text-align:center"><div style="font-size:36px;font-weight:900;letter-spacing:-.03em">Free</div><div class="t-xs" style="margin-top:6px">To join</div></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works" style="max-width:1100px;margin:0 auto;padding:60px 20px 80px">
+    <div style="text-align:center;margin-bottom:52px">
+      <div class="t-xs" style="margin-bottom:10px">How it works</div>
+      <h2 class="t-h1">Built for every level of football.</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-cell">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg></div>
+        <div class="t-h4" style="margin-bottom:7px">Build your profile</div>
+        <p class="t-sm" style="line-height:1.65">Stats, videos, career history — your complete digital football CV in one place.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg></div>
+        <div class="t-h4" style="margin-bottom:7px">Get discovered</div>
+        <p class="t-sm" style="line-height:1.65">Scouts and clubs search our global talent map to find players matching their criteria.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0"/></svg></div>
+        <div class="t-h4" style="margin-bottom:7px">Connect directly</div>
+        <p class="t-sm" style="line-height:1.65">No agents, no gatekeepers. Talent speaks directly to opportunity worldwide.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></div>
+        <div class="t-h4" style="margin-bottom:7px">Track your career</div>
+        <p class="t-sm" style="line-height:1.65">Live rankings, badges and career stats. Watch your reputation grow in real time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED PLAYERS from DB -->
+  <section id="discover-section" style="max-width:1100px;margin:0 auto;padding:60px 20px 80px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:14px">
+      <div><div class="t-xs" style="margin-bottom:10px">Talent spotlight</div><h2 class="t-h1">Rising stars.</h2></div>
+      <button class="btn btn-secondary" onclick="goTo('discover')">View all players</button>
+    </div>
+    <div class="g-auto" id="landingPlayerGrid">
+      <div class="empty-state">Loading players...</div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section style="max-width:1100px;margin:0 auto;padding:0 20px 100px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:72px 36px;text-align:center">
+      <h2 class="t-h1" style="margin-bottom:14px">Your next move starts here.</h2>
+      <p class="t-body" style="font-size:16px;max-width:480px;margin:0 auto 36px">Join thousands of players who are already being discovered by scouts and clubs worldwide.</p>
+      <button class="btn btn-primary btn-lg" onclick="goTo('register')">Create your profile — it's free</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="border-top:1px solid var(--border);padding:40px 20px">
+    <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+      <div><div style="font-size:17px;font-weight:900;letter-spacing:-.04em;margin-bottom:5px">ELEVN</div><div class="t-sm">Every player deserves a chance.</div></div>
+      <div style="display:flex;gap:20px"><a class="t-sm" href="#">Privacy</a><a class="t-sm" href="#">Terms</a><a class="t-sm" href="#">Contact</a></div>
+      <div class="t-sm">© 2025 ELEVN</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════ PAGE: LOGIN ═══════════════════ -->
+<div id="page-login" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo" onclick="goTo('landing')">ELEVN</div>
+      <div class="t-h3" style="margin-bottom:4px">Welcome back</div>
+      <p class="t-sm" style="margin-bottom:22px">Sign in to your account</p>
+      <button class="google-btn" onclick="signInGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-divider"><div class="auth-divider-line"></div><span class="auth-divider-label">or</span><div class="auth-divider-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="inp-group"><label class="inp-label">Email</label><input id="loginEmail" class="inp" type="email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')signInEmail()"></div>
+        <div class="inp-group"><label class="inp-label">Password</label><input id="loginPass" class="inp" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')signInEmail()"></div>
+        <div id="loginError" class="error-msg"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:2px" id="loginBtn" onclick="signInEmail()">Sign in</button>
+      </div>
+      <p style="text-align:center;margin-top:20px;font-size:13px;color:var(--white35)">
+        No account? <span style="color:var(--white60);cursor:pointer;font-weight:500" onclick="goTo('register')">Sign up</span>
+      </p>
+      <p style="text-align:center;margin-top:10px"><span class="t-sm" style="cursor:pointer" onclick="goTo('landing')">← Back to home</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PAGE: REGISTER ═══════════════════ -->
+<div id="page-register" class="page">
+  <div class="auth-wrap" style="padding-top:80px">
+    <div class="auth-card" style="max-width:480px">
+      <div class="auth-logo" onclick="goTo('landing')">ELEVN</div>
+      <div class="t-h3" style="margin-bottom:4px">Create your account</div>
+      <p class="t-sm" style="margin-bottom:22px">Join the world's football community — free forever</p>
+      <button class="google-btn" onclick="signInGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+      <div class="auth-divider"><div class="auth-divider-line"></div><span class="auth-divider-label">or</span><div class="auth-divider-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="inp-group"><label class="inp-label">First name</label><input id="regFirst" class="inp" type="text" placeholder="Marcus"></div>
+          <div class="inp-group"><label class="inp-label">Last name</label><input id="regLast" class="inp" type="text" placeholder="Johnson"></div>
+        </div>
+        <div class="inp-group"><label class="inp-label">Email</label><input id="regEmail" class="inp" type="email" placeholder="marcus@email.com"></div>
+        <div class="inp-group"><label class="inp-label">Password</label><input id="regPass" class="inp" type="password" placeholder="Min 8 characters"></div>
+        <div class="inp-group"><label class="inp-label">I am a...</label>
+          <select id="regRole" class="inp inp-select">
+            <option value="player">Player</option>
+            <option value="club">Club / Academy</option>
+            <option value="recruiter">Scout / Recruiter</option>
+          </select>
+        </div>
+        <div id="regError" class="error-msg"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:2px" id="regBtn" onclick="registerEmail()">
+          Create account — free
+        </button>
+        <p class="t-sm" style="text-align:center;line-height:1.7">By creating an account, you agree to our Terms of Service and Privacy Policy.</p>
+      </div>
+      <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--white35)">
+        Already on ELEVN? <span style="color:var(--white60);cursor:pointer;font-weight:500" onclick="goTo('login')">Sign in</span>
+      </p>
+      <p style="text-align:center;margin-top:10px"><span class="t-sm" style="cursor:pointer" onclick="goTo('landing')">← Back to home</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PAGE: DASHBOARD ═══════════════════ -->
+<div id="page-dashboard" class="page">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo" onclick="goTo('landing')">ELEVN</div>
+    <div class="nav-center">
+      <span class="nav-link" onclick="showTab('home')">Home</span>
+      <span class="nav-link" onclick="goTo('discover')">Discover</span>
+      <span class="nav-link" onclick="showTab('rankings')">Rankings</span>
+    </div>
+    <div class="nav-right">
+      <div style="position:relative;cursor:pointer" onclick="showTab('notifications')">
+        <button class="btn-icon btn-ghost">
+          <svg width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+        </button>
+        <div class="notif-badge" id="navNotifBadge">0</div>
+      </div>
+      <div class="dropdown">
+        <div id="navAvatar" class="av av-32" style="cursor:pointer;background:var(--surface3)" onclick="toggleDD('navMenu')"></div>
+        <div class="dd-menu" id="navMenu">
+          <div class="dd-item" onclick="closeDD('navMenu');showTab('profile')">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
+            My profile
+          </div>
+          <div class="dd-item" onclick="closeDD('navMenu');showTab('settings')">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+          </div>
+          <hr class="dd-divider">
+          <div class="dd-item danger" onclick="signOut()">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+            Sign out
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-body">
+      <div class="sidebar-section">Main</div>
+      <div class="sb-item active" id="sb-home" onclick="showTab('home')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>
+        Home
+      </div>
+      <div class="sb-item" id="sb-profile" onclick="showTab('profile')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
+        My profile
+      </div>
+      <div class="sb-item" id="sb-videos" onclick="showTab('videos')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
+        Videos
+      </div>
+      <div class="sidebar-section">Explore</div>
+      <div class="sb-item" id="sb-discover" onclick="goTo('discover')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        Discover
+      </div>
+      <div class="sb-item" id="sb-rankings" onclick="showTab('rankings')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+        Rankings
+      </div>
+      <div class="sidebar-section">Account</div>
+      <div class="sb-item" id="sb-notifications" onclick="showTab('notifications')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+        Notifications
+        <span class="sb-badge" id="sbNotifCount" style="display:none"></span>
+      </div>
+      <div class="sb-item" id="sb-settings" onclick="showTab('settings')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Settings
+      </div>
+    </div>
+  </aside>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bn-items">
+      <div class="bn-item active" id="bn-home" onclick="showTab('home')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg><span class="bn-label">Home</span></div>
+      <div class="bn-item" id="bn-discover" onclick="goTo('discover')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg><span class="bn-label">Discover</span></div>
+      <div class="bn-item" id="bn-rankings" onclick="showTab('rankings')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg><span class="bn-label">Rankings</span></div>
+      <div class="bn-item" id="bn-profile" onclick="showTab('profile')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg><span class="bn-label">Profile</span></div>
+    </div>
+  </div>
+
+  <!-- DASH CONTENT -->
+  <div class="dash-wrap">
+    <div class="dash-main">
+
+      <!-- ── HOME TAB ── -->
+      <div class="tab-content active" id="dash-home">
+        <div class="dash-title" id="homeGreeting">Good morning</div>
+        <div class="dash-sub">Here's what's happening on ELEVN</div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-lbl">Profile views (7 days)</div><div class="stat-val" id="homeViews">—</div><div class="stat-delta" id="homeViewsDelta"></div></div>
+          <div class="stat-card"><div class="stat-lbl">Contact requests</div><div class="stat-val" id="homeRequests">—</div></div>
+          <div class="stat-card"><div class="stat-lbl">World ranking</div><div class="stat-val" id="homeRank">—</div></div>
+          <div class="stat-card"><div class="stat-lbl">Videos</div><div class="stat-val" id="homeVideos">—</div></div>
+        </div>
+        <!-- Profile completion -->
+        <div class="card" style="margin-bottom:22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div>
+              <div class="t-h4">Profile completion</div>
+              <div class="t-sm" style="margin-top:2px">Complete your profile to be discovered 3× faster</div>
+            </div>
+            <div style="font-size:22px;font-weight:800;color:var(--green-light)" id="homeCompletion">0%</div>
+          </div>
+          <div class="progress"><div class="progress-fill" id="homeCompletionBar" style="width:0%;background:var(--green-light)"></div></div>
+          <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-sm" onclick="openModal('modalEditProfile');loadProfileIntoForm()">Complete profile</button>
+            <button class="btn btn-secondary btn-sm" onclick="showTab('videos');openModal('modalUploadVideo')">+ Add highlight</button>
+          </div>
+        </div>
+        <div class="g2">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div class="t-h4">Recent activity</div>
+              <button class="btn btn-ghost btn-sm" onclick="showTab('notifications')">View all</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="homeActivity">
+              <div class="t-sm">No activity yet</div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div class="t-h4">Top players globally</div>
+              <button class="btn btn-ghost btn-sm" onclick="showTab('rankings')">Rankings</button>
+            </div>
+            <div id="homeTopPlayers"><div class="t-sm">Loading...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROFILE TAB ── -->
+      <div class="tab-content" id="dash-profile">
+        <div style="margin:-28px -28px 0;background:var(--surface);border-bottom:1px solid var(--border)">
+          <div class="profile-cover">
+            <div class="profile-cover-noise"></div>
+            <div class="profile-pattern"></div>
+            <div class="profile-av-wrap">
+              <div class="av av-120" id="profileAvatar"></div>
+            </div>
+            <div style="position:absolute;top:14px;right:20px;display:flex;gap:8px">
+              <button class="btn btn-secondary btn-sm" onclick="openModal('modalEditProfile');loadProfileIntoForm()">Edit profile</button>
+            </div>
+          </div>
+          <div style="padding:64px 28px 28px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px">
+              <div>
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:5px">
+                  <span class="t-h2" id="profileName">—</span>
+                  <span class="badge badge-green" id="profileVerifiedBadge" style="display:none">✓ Verified</span>
+                  <span class="badge badge-gold" id="profileEliteBadge" style="display:none">⚡ Elite Prospect</span>
+                </div>
+                <div style="color:var(--white60);font-size:14px;margin-bottom:12px" id="profilePos">—</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap">
+                  <span class="t-sm" id="profileLocation"></span>
+                  <span class="t-sm" id="profileAge"></span>
+                  <span class="t-sm" id="profilePhysical"></span>
+                  <span class="t-sm" id="profileClub"></span>
+                </div>
+              </div>
+              <div style="display:flex;gap:20px;align-items:center">
+                <div style="text-align:center"><div style="font-size:22px;font-weight:800;letter-spacing:-.02em" id="profileWorldRank">—</div><div class="t-xs">World</div></div>
+                <div style="width:1px;height:32px;background:var(--border)"></div>
+                <div style="text-align:center"><div style="font-size:22px;font-weight:800;letter-spacing:-.02em" id="profileCountryRank">—</div><div class="t-xs" id="profileCountryRankLabel">Country</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="g2" style="margin-top:28px">
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="card">
+              <div class="t-h4" style="margin-bottom:14px">Season statistics</div>
+              <div class="g2" style="gap:10px">
+                <div class="pc-stat"><div class="pc-stat-val" id="pMatches">—</div><div class="pc-stat-lbl">Matches</div></div>
+                <div class="pc-stat"><div class="pc-stat-val" id="pGoals">—</div><div class="pc-stat-lbl">Goals</div></div>
+                <div class="pc-stat"><div class="pc-stat-val" id="pAssists">—</div><div class="pc-stat-lbl">Assists</div></div>
+                <div class="pc-stat"><div class="pc-stat-val" id="pMins">—</div><div class="pc-stat-lbl">Minutes</div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="t-h4" style="margin-bottom:14px">Physical profile</div>
+              <div class="g2" style="gap:12px">
+                <div><div class="t-xs" style="margin-bottom:3px">Height</div><div style="font-size:15px;font-weight:600" id="pHeight">—</div></div>
+                <div><div class="t-xs" style="margin-bottom:3px">Weight</div><div style="font-size:15px;font-weight:600" id="pWeight">—</div></div>
+                <div><div class="t-xs" style="margin-bottom:3px">Strong foot</div><div style="font-size:15px;font-weight:600" id="pFoot">—</div></div>
+                <div><div class="t-xs" style="margin-bottom:3px">Nationality</div><div style="font-size:15px;font-weight:600" id="pNationality">—</div></div>
+              </div>
+            </div>
+            <div class="card" id="profileBioCard" style="display:none">
+              <div class="t-h4" style="margin-bottom:10px">About</div>
+              <p class="t-body" id="profileBio" style="font-size:14px"></p>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="card">
+              <div class="t-h4" style="margin-bottom:14px">Badges</div>
+              <div style="display:flex;flex-direction:column;gap:9px" id="profileBadges">
+                <div class="t-sm">Complete your profile to earn badges.</div>
+              </div>
+            </div>
+            <div class="card">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div class="t-h4">Videos</div>
+                <button class="btn btn-ghost btn-sm" onclick="showTab('videos')">View all</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px" id="profileVideosPreview">
+                <button class="btn btn-secondary btn-sm" style="width:fit-content" onclick="showTab('videos');openModal('modalUploadVideo')">
+                  + Upload first video
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── VIDEOS TAB ── -->
+      <div class="tab-content" id="dash-videos">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div class="dash-title">Videos</div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modalUploadVideo')">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Upload
+          </button>
+        </div>
+        <div class="dash-sub">Your highlights and match footage</div>
+        <div class="g-auto" id="videosGrid">
+          <div class="empty-state">No videos yet. Upload your first highlight.</div>
+        </div>
+      </div>
+
+      <!-- ── RANKINGS TAB ── -->
+      <div class="tab-content" id="dash-rankings">
+        <div class="dash-title">Rankings</div>
+        <div class="dash-sub">Updated in real time based on season performance</div>
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <select class="inp inp-select" style="max-width:150px;padding:9px 32px 9px 12px" id="rankCountryFilter" onchange="loadRankings()">
+            <option value="">World</option>
+            <option>France</option><option>Brazil</option><option>England</option><option>Spain</option><option>Nigeria</option><option>Argentina</option><option>Germany</option><option>Portugal</option>
+          </select>
+          <select class="inp inp-select" style="max-width:150px;padding:9px 32px 9px 12px" id="rankPosFilter" onchange="loadRankings()">
+            <option value="">All positions</option>
+            <option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Winger</option><option>Striker</option>
+          </select>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden" id="rankingsList">
+          <div class="empty-state">Loading rankings...</div>
+        </div>
+      </div>
+
+      <!-- ── NOTIFICATIONS TAB ── -->
+      <div class="tab-content" id="dash-notifications">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div class="dash-title">Notifications</div>
+          <button class="btn btn-ghost btn-sm" onclick="markAllNotifsRead()">Mark all read</button>
+        </div>
+        <div class="dash-sub" id="notifSubtitle">—</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="notifList">
+          <div class="empty-state">No notifications yet.</div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS TAB ── -->
+      <div class="tab-content" id="dash-settings">
+        <div class="dash-title">Settings</div>
+        <div class="dash-sub">Manage your account and privacy</div>
+        <div style="max-width:560px;display:flex;flex-direction:column;gap:20px">
+          <div class="card">
+            <div class="t-h4" style="margin-bottom:18px">Account</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="inp-group"><label class="inp-label">Display name</label><input id="settingsName" class="inp" type="text"></div>
+              <div class="inp-group"><label class="inp-label">Email</label><input class="inp" type="email" id="settingsEmail" disabled style="opacity:.45"></div>
+              <button class="btn btn-secondary btn-sm" style="width:fit-content" onclick="saveDisplayName()">Save changes</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="t-h4" style="margin-bottom:18px">Privacy</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div><div style="font-size:14px;font-weight:500">Public profile</div><div class="t-sm" style="margin-top:2px">Anyone can discover your profile on ELEVN</div></div>
+                <label style="position:relative;display:inline-block;width:42px;height:22px;cursor:pointer">
+                  <input type="checkbox" id="settingsPublic" checked style="opacity:0;position:absolute" onchange="savePrivacySetting(this.id,this.checked)">
+                  <div id="settingsPublicTrack" style="position:absolute;inset:0;background:var(--green-light);border-radius:11px;transition:.2s"><div style="position:absolute;top:2px;right:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s"></div></div>
+                </label>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div><div style="font-size:14px;font-weight:500">Show in rankings</div><div class="t-sm" style="margin-top:2px">Appear in global and national player rankings</div></div>
+                <label style="position:relative;display:inline-block;width:42px;height:22px;cursor:pointer">
+                  <input type="checkbox" id="settingsRankings" checked style="opacity:0;position:absolute" onchange="savePrivacySetting(this.id,this.checked)">
+                  <div id="settingsRankingsTrack" style="position:absolute;inset:0;background:var(--green-light);border-radius:11px;transition:.2s"><div style="position:absolute;top:2px;right:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s"></div></div>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="t-h4" style="margin-bottom:4px;color:var(--red-light)">Danger zone</div>
+            <div class="t-sm" style="margin-bottom:14px">These actions are irreversible.</div>
+            <button class="btn btn-danger btn-sm" onclick="if(confirm('Delete your ELEVN account permanently?'))deleteAccount()">Delete account</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PAGE: DISCOVER ═══════════════════ -->
+<div id="page-discover" class="page">
+  <nav class="nav">
+    <div class="nav-logo" onclick="goTo(A.user ? 'dashboard' : 'landing')">ELEVN</div>
+    <div class="nav-center">
+      <span class="nav-link" onclick="goTo(A.user ? 'dashboard' : 'landing')">← Back</span>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-primary btn-sm" onclick="A.user ? goTo('dashboard') : goTo('register')">
+        <span id="discoverNavCta">Join ELEVN</span>
+      </button>
+    </div>
+  </nav>
+  <div style="padding:calc(var(--nav-h)+28px) 24px 60px;max-width:1200px;margin:0 auto">
+    <div class="t-h1" style="margin-bottom:6px">Discover Talent</div>
+    <p class="t-body" style="margin-bottom:28px">Search players and clubs from 190 countries.</p>
+    <div style="display:flex;gap:2px;margin-bottom:22px">
+      <button class="tab-pill active" id="discTabPlayers" onclick="switchDiscoverTab('players')">Players</button>
+      <button class="tab-pill" id="discTabClubs" onclick="switchDiscoverTab('clubs')">Clubs</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="inp-search-wrap" style="flex:1;min-width:200px">
+        <div class="inp-search-icon"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg></div>
+        <input type="text" class="inp inp-search" id="discSearch" placeholder="Search by name..." oninput="applyDiscoverFilters()">
+      </div>
+      <select class="inp inp-select" style="max-width:140px;padding:9px 32px 9px 12px" id="discPosFilter" onchange="applyDiscoverFilters()">
+        <option value="">All positions</option>
+        <option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Winger</option><option>Striker</option>
+      </select>
+      <select class="inp inp-select" style="max-width:140px;padding:9px 32px 9px 12px" id="discCountryFilter" onchange="applyDiscoverFilters()">
+        <option value="">All countries</option>
+        <option>France</option><option>Brazil</option><option>England</option><option>Spain</option><option>Nigeria</option><option>Argentina</option><option>Germany</option><option>Japan</option><option>Senegal</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:22px" id="discChips">
+      <button class="chip on" data-age="" onclick="selectChip(this,'age')">All ages</button>
+      <button class="chip" data-age="u18" onclick="selectChip(this,'age')">Under 18</button>
+      <button class="chip" data-age="u21" onclick="selectChip(this,'age')">Under 21</button>
+      <button class="chip" data-age="u25" onclick="selectChip(this,'age')">Under 25</button>
+      <button class="chip" data-age="senior" onclick="selectChip(this,'age')">Senior 25+</button>
+    </div>
+    <div class="t-sm" id="discCount" style="margin-bottom:14px">Loading...</div>
+    <div id="discContent" class="g-auto">
+      <div class="empty-state">Loading players...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PAGE: ADMIN ═══════════════════ -->
+<div id="page-admin" class="page">
+  <nav class="nav">
+    <div class="nav-logo">ELEVN <span class="badge badge-red" style="margin-left:8px;font-size:10px">ADMIN</span></div>
+    <div class="nav-right">
+      <button class="btn btn-ghost btn-sm" onclick="goTo('dashboard')">← App</button>
+      <button class="btn btn-danger btn-sm" onclick="signOut()">Sign out</button>
+    </div>
+  </nav>
+  <div class="admin-wrap">
+    <div class="admin-side">
+      <div class="admin-si active" onclick="adminTab('overview',this)">Overview</div>
+      <div class="admin-si" onclick="adminTab('users',this)">Users</div>
+      <div class="admin-si" onclick="adminTab('verification',this)">Verifications</div>
+      <div class="admin-si" onclick="adminTab('videos-admin',this)">Videos</div>
+    </div>
+    <div class="admin-main" id="adminContent">Loading...</div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   FIREBASE INIT
+═══════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDqvSzyFHHDaABtw9xANJ6AmMdrN9Zr9pc",
+  authDomain: "elevn-62a0a.firebaseapp.com",
+  projectId: "elevn-62a0a",
+  storageBucket: "elevn-62a0a.firebasestorage.app",
+  messagingSenderId: "251725168775",
+  appId: "1:251725168775:web:fd017208b54c4c61753822",
+  measurementId: "G-9LKP4WTT92",
+  databaseURL: "https://elevn-62a0a-default-rtdb.europe-west1.firebasedatabase.app"
+};
+firebase.initializeApp(firebaseConfig);
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+try { firebase.analytics(); } catch(e) {}
+const auth = firebase.auth();
+const db = firebase.database();
+
+/* ═══════════════════════════════════════════════════════════
+   APP STATE
+═══════════════════════════════════════════════════════════ */
+const A = {
+  user: null,
+  profile: null,
+  currentPage: 'landing',
+  currentTab: 'home',
+  discoverPlayers: [],
+  discoverTab: 'players',
+  ageFilter: '',
+  notifCount: 0
+};
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH STATE OBSERVER
+═══════════════════════════════════════════════════════════ */
+auth.onAuthStateChanged(async user => {
+  const loading = document.getElementById('loadingScreen');
+  if (user) {
+    A.user = user;
+    await ensureUserRecord(user);
+    await loadMyProfile();
+    updateNavAvatar();
+    loadNotifCount();
+    subscribeNotifs();
+    const cta = document.getElementById('discoverNavCta');
+    if (cta) cta.textContent = 'Dashboard';
+    loadLandingStats();
+    loadLandingPlayers();
+  } else {
+    A.user = null;
+    A.profile = null;
+    loadLandingStats();
+    loadLandingPlayers();
+  }
+  loading.classList.add('hidden');
+  if (!user && ['dashboard','admin'].includes(A.currentPage)) goTo('login');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   DATABASE HELPERS
+═══════════════════════════════════════════════════════════ */
+async function ensureUserRecord(user) {
+  const ref = db.ref(`users/${user.uid}`);
+  const snap = await ref.once('value');
+  if (!snap.exists()) {
+    const displayName = user.displayName || '';
+    const parts = displayName.split(' ');
+    const first = parts[0] || '';
+    const last = parts.slice(1).join(' ');
+    await ref.set({
+      uid: user.uid,
+      email: user.email,
+      displayName: displayName || user.email.split('@')[0],
+      firstName: first,
+      lastName: last,
+      role: 'player',
+      createdAt: Date.now(),
+      verified: false,
+      public: true,
+      showInRankings: true
+    });
+    await db.ref(`players/${user.uid}`).set({
+      uid: user.uid,
+      name: displayName || user.email.split('@')[0],
+      firstName: first,
+      lastName: last,
+      position: '',
+      country: '',
+      city: '',
+      age: 0,
+      height: 0,
+      weight: 0,
+      foot: 'Right',
+      club: '',
+      bio: '',
+      matches: 0,
+      goals: 0,
+      assists: 0,
+      minutesPlayed: 0,
+      profileViews: 0,
+      rating: 0,
+      verified: false,
+      photoURL: user.photoURL || '',
+      createdAt: Date.now()
+    });
+    await pushNotif(user.uid, {
+      type: 'welcome',
+      icon: '👋',
+      text: 'Welcome to ELEVN! Complete your profile to start getting discovered.',
+      read: false,
+      ts: Date.now()
+    });
+  }
+}
+
+async function loadMyProfile() {
+  if (!A.user) return;
+  const snap = await db.ref(`players/${A.user.uid}`).once('value');
+  A.profile = snap.val();
+  renderProfilePage();
+  renderHomeStats();
+  loadProfileVideosPreview();
+}
+
+async function pushNotif(uid, notifObj) {
+  await db.ref(`notifications/${uid}`).push(notifObj);
+}
+
+function subscribeNotifs() {
+  if (!A.user) return;
+  db.ref(`notifications/${A.user.uid}`).on('value', snap => {
+    const notifs = [];
+    snap.forEach(c => notifs.push({ id: c.key, ...c.val() }));
+    notifs.sort((a,b) => b.ts - a.ts);
+    A.notifCount = notifs.filter(n => !n.read).length;
+    updateNotifBadge();
+    renderNotifList(notifs);
+    // home activity — last 3
+    const actEl = document.getElementById('homeActivity');
+    if (actEl) {
+      const recent = notifs.slice(0,3);
+      if (!recent.length) { actEl.innerHTML = '<div class="t-sm">No activity yet</div>'; return; }
+      actEl.innerHTML = recent.map(n => `
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:var(--r);border:1px solid var(--border)">
+          <span style="font-size:20px;line-height:1">${esc(n.icon||'📌')}</span>
+          <div>
+            <div style="font-size:13px">${esc(n.text)}</div>
+            <div class="t-sm" style="margin-top:2px">${timeAgo(n.ts)}</div>
+          </div>
+        </div>`).join('');
+    }
+  });
+}
+
+function loadNotifCount() {
+  if (!A.user) return;
+  db.ref(`notifications/${A.user.uid}`).orderByChild('read').equalTo(false).once('value', snap => {
+    A.notifCount = snap.numChildren();
+    updateNotifBadge();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH ACTIONS
+═══════════════════════════════════════════════════════════ */
+async function signInEmail() {
+  const btn = document.getElementById('loginBtn');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!email || !pass) { showErr(errEl, 'Please fill in all fields.'); return; }
+  setBtnLoading(btn, true);
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+    toast('Welcome back! 👋', 'success');
+    goTo('dashboard');
+  } catch(e) {
+    showErr(errEl, friendlyAuthError(e.code));
+  } finally { setBtnLoading(btn, false); }
+}
+
+async function registerEmail() {
+  const btn = document.getElementById('regBtn');
+  const first = document.getElementById('regFirst').value.trim();
+  const last = document.getElementById('regLast').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const role = document.getElementById('regRole').value;
+  const errEl = document.getElementById('regError');
+  errEl.style.display = 'none';
+  if (!first || !last || !email || !pass) { showErr(errEl, 'Please fill in all fields.'); return; }
+  if (pass.length < 8) { showErr(errEl, 'Password must be at least 8 characters.'); return; }
+  setBtnLoading(btn, true);
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: `${first} ${last}` });
+    await db.ref(`users/${cred.user.uid}/role`).set(role);
+    await db.ref(`users/${cred.user.uid}/firstName`).set(first);
+    await db.ref(`users/${cred.user.uid}/lastName`).set(last);
+    await db.ref(`players/${cred.user.uid}/name`).set(`${first} ${last}`);
+    await db.ref(`players/${cred.user.uid}/firstName`).set(first);
+    await db.ref(`players/${cred.user.uid}/lastName`).set(last);
+    toast('Welcome to ELEVN! 🎉 Complete your profile to get discovered.', 'success');
+    goTo('dashboard');
+  } catch(e) {
+    showErr(errEl, friendlyAuthError(e.code));
+  } finally { setBtnLoading(btn, false); }
+}
+
+async function signInGoogle() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
+    toast('Signed in with Google! 👋', 'success');
+    goTo('dashboard');
+  } catch(e) {
+    toast('Google sign-in failed: ' + e.message, 'error');
+  }
+}
+
+async function signOut() {
+  await auth.signOut();
+  A.user = null;
+  A.profile = null;
+  toast('Signed out.', 'info');
+  goTo('landing');
+}
+
+async function deleteAccount() {
+  if (!A.user) return;
+  try {
+    await db.ref(`players/${A.user.uid}`).remove();
+    await db.ref(`users/${A.user.uid}`).remove();
+    await db.ref(`videos/${A.user.uid}`).remove();
+    await db.ref(`notifications/${A.user.uid}`).remove();
+    await A.user.delete();
+    toast('Account deleted.', 'info');
+    goTo('landing');
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROFILE
+═══════════════════════════════════════════════════════════ */
+function renderProfilePage() {
+  const p = A.profile;
+  if (!p) return;
+
+  renderAvatar('profileAvatar', p, 'av-120');
+  renderAvatar('navAvatar', p, 'av-32');
+  renderAvatar('modalAvatar', p, 'av-80');
+
+  setText('profileName', p.name || '—');
+  setText('profilePos', [p.position, p.foot ? p.foot + ' foot' : ''].filter(Boolean).join(' · ') || 'No position set');
+  setText('profileLocation', p.city && p.country ? `📍 ${p.city}, ${p.country}` : '');
+  setText('profileAge', p.age ? `🎂 ${p.age} years` : '');
+  setText('profilePhysical', (p.height || p.weight) ? `📏 ${p.height ? p.height+'cm' : ''} ${p.weight ? '· '+p.weight+'kg' : ''}`.trim() : '');
+  setText('profileClub', p.club ? `🏟 ${p.club}` : '');
+
+  const verBadge = document.getElementById('profileVerifiedBadge');
+  const eliteBadge = document.getElementById('profileEliteBadge');
+  if (verBadge) verBadge.style.display = p.verified ? 'inline-flex' : 'none';
+  const isElite = (p.goals || 0) >= 10 && (p.matches || 0) >= 10;
+  if (eliteBadge) eliteBadge.style.display = isElite ? 'inline-flex' : 'none';
+
+  setText('profileWorldRank', p.worldRank ? '#'+p.worldRank : '—');
+  setText('profileCountryRank', p.countryRank ? '#'+p.countryRank : '—');
+  setText('profileCountryRankLabel', p.country || 'Country');
+
+  setText('pMatches', p.matches ?? '—');
+  setText('pGoals', p.goals ?? '—');
+  setText('pAssists', p.assists ?? '—');
+  setText('pMins', p.minutesPlayed ?? '—');
+  setText('pHeight', p.height ? p.height+' cm' : '—');
+  setText('pWeight', p.weight ? p.weight+' kg' : '—');
+  setText('pFoot', p.foot || '—');
+  setText('pNationality', p.country || '—');
+
+  const bioCard = document.getElementById('profileBioCard');
+  const bioEl = document.getElementById('profileBio');
+  if (bioCard && bioEl) {
+    if (p.bio) { bioCard.style.display = 'block'; bioEl.textContent = p.bio; }
+    else bioCard.style.display = 'none';
+  }
+
+  renderBadges(p);
+
+  const completion = computeCompletion(p);
+  const homeComp = document.getElementById('homeCompletion');
+  const homeCompBar = document.getElementById('homeCompletionBar');
+  if (homeComp) homeComp.textContent = completion + '%';
+  if (homeCompBar) homeCompBar.style.width = completion + '%';
+
+  const sName = document.getElementById('settingsName');
+  const sEmail = document.getElementById('settingsEmail');
+  if (sName) sName.value = p.name || (A.user && A.user.displayName) || '';
+  if (sEmail && A.user) sEmail.value = A.user.email || '';
+}
+
+function renderAvatar(elId, p, sizeClass) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.className = 'av ' + sizeClass;
+  if (p && p.photoURL) {
+    el.innerHTML = `<img src="${esc(p.photoURL)}" alt="">`;
+    el.style.background = 'transparent';
+  } else if (p && p.name) {
+    const initials = p.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    el.textContent = initials;
+    el.style.background = strToColor(p.name);
+    el.style.color = '#fff';
+  } else {
+    el.textContent = '?';
+    el.style.background = 'var(--surface3)';
+  }
+}
+
+function renderAvatarInline(p, sizeClass) {
+  if (p && p.photoURL) {
+    return `<div class="av ${sizeClass}" style="background:transparent"><img src="${esc(p.photoURL)}" alt=""></div>`;
+  } else if (p && p.name) {
+    const initials = p.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    return `<div class="av ${sizeClass}" style="background:${strToColor(p.name)};color:#fff">${initials}</div>`;
+  }
+  return `<div class="av ${sizeClass}">?</div>`;
+}
+
+function renderBadges(p) {
+  const el = document.getElementById('profileBadges');
+  if (!el) return;
+  const badges = [];
+  if (p.verified) badges.push({ emoji:'✓', label:'Verified Player', desc:'Identity confirmed by ELEVN', bg:'var(--green-bg)', border:'var(--green-border)' });
+  if ((p.goals||0) >= 10 && (p.matches||0) >= 10) badges.push({ emoji:'⚡', label:'Elite Prospect', desc:'Top-tier season performance', bg:'var(--gold-bg)', border:'var(--gold-border)' });
+  if ((p.goals||0) >= 15) badges.push({ emoji:'🎯', label:'Goal Machine', desc:'15+ goals in a season', bg:'var(--blue-bg)', border:'var(--blue-border)' });
+  if ((p.assists||0) >= 10) badges.push({ emoji:'🎪', label:'Playmaker', desc:'10+ assists in a season', bg:'var(--purple-bg)', border:'transparent' });
+  if ((p.matches||0) >= 25) badges.push({ emoji:'🏃', label:'Iron Man', desc:'25+ matches played', bg:'var(--white08)', border:'var(--border)' });
+  if (!badges.length) {
+    el.innerHTML = '<div class="t-sm">Complete your stats to earn badges.</div>';
+  } else {
+    el.innerHTML = badges.map(b => `
+      <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:${b.bg};border:1px solid ${b.border};border-radius:var(--r)">
+        <span style="font-size:22px">${b.emoji}</span>
+        <div><div style="font-size:14px;font-weight:600">${b.label}</div><div class="t-sm" style="margin-top:1px">${b.desc}</div></div>
+      </div>`).join('');
+  }
+}
+
+function computeCompletion(p) {
+  let score = 0;
+  const fields = ['name','position','country','city','age','height','weight','foot','club'];
+  fields.forEach(f => { if (p[f]) score++; });
+  if (p.bio) score++;
+  if (p.photoURL) score += 2;
+  if ((p.goals||0) > 0 || (p.matches||0) > 0) score++;
+  return Math.min(100, Math.round((score / (fields.length + 3)) * 100));
+}
+
+function renderHomeStats() {
+  const p = A.profile;
+  if (!p) return;
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  setText('homeGreeting', `${greeting}, ${p.firstName || p.name.split(' ')[0] || 'there'}`);
+  setText('homeViews', p.profileViews || '0');
+  setText('homeRequests', p.contactRequests || '0');
+  setText('homeRank', p.worldRank ? '#'+p.worldRank : '—');
+  // Videos count
+  if (A.user) {
+    db.ref(`videos/${A.user.uid}`).once('value', s => setText('homeVideos', s.numChildren()));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SAVE PROFILE
+═══════════════════════════════════════════════════════════ */
+function loadProfileIntoForm() {
+  const p = A.profile || {};
+  const fields = {
+    'ep-first':'firstName','ep-last':'lastName','ep-pos':'position',
+    'ep-country':'country','ep-city':'city','ep-age':'age','ep-height':'height',
+    'ep-weight':'weight','ep-foot':'foot','ep-club':'club','ep-bio':'bio',
+    'ep-matches':'matches','ep-goals':'goals','ep-assists':'assists','ep-mins':'minutesPlayed'
+  };
+  Object.entries(fields).forEach(([id,key]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = p[key] || '';
+  });
+  if (A.profile) renderAvatar('modalAvatar', A.profile, 'av-80');
+}
+
+async function saveProfile() {
+  if (!A.user) return;
+  const btn = document.getElementById('epSaveBtn');
+  const errEl = document.getElementById('ep-error');
+  errEl.style.display = 'none';
+  const first = document.getElementById('ep-first').value.trim();
+  const last = document.getElementById('ep-last').value.trim();
+  if (!first) { showErr(errEl,'First name is required.'); return; }
+  setBtnLoading(btn, true);
+  const data = {
+    firstName: first,
+    lastName: last,
+    name: `${first} ${last}`.trim(),
+    position: document.getElementById('ep-pos').value,
+    country: document.getElementById('ep-country').value.trim(),
+    city: document.getElementById('ep-city').value.trim(),
+    age: parseInt(document.getElementById('ep-age').value) || 0,
+    height: parseInt(document.getElementById('ep-height').value) || 0,
+    weight: parseInt(document.getElementById('ep-weight').value) || 0,
+    foot: document.getElementById('ep-foot').value,
+    club: document.getElementById('ep-club').value.trim(),
+    bio: document.getElementById('ep-bio').value.trim(),
+    matches: parseInt(document.getElementById('ep-matches').value) || 0,
+    goals: parseInt(document.getElementById('ep-goals').value) || 0,
+    assists: parseInt(document.getElementById('ep-assists').value) || 0,
+    minutesPlayed: parseInt(document.getElementById('ep-mins').value) || 0,
+    updatedAt: Date.now()
+  };
+  data.rating = computeRating(data);
+  try {
+    await db.ref(`players/${A.user.uid}`).update(data);
+    await db.ref(`users/${A.user.uid}`).update({ displayName: data.name });
+    await auth.currentUser.updateProfile({ displayName: data.name });
+    A.profile = { ...A.profile, ...data };
+    renderProfilePage();
+    closeModal('modalEditProfile');
+    toast('Profile saved!', 'success');
+  } catch(e) {
+    showErr(errEl, e.message);
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+function computeRating(p) {
+  let r = 50;
+  if ((p.goals||0) > 0) r += Math.min(20, p.goals * 1.2);
+  if ((p.assists||0) > 0) r += Math.min(15, p.assists * 1.0);
+  if ((p.matches||0) > 0) r += Math.min(10, p.matches * 0.35);
+  if (p.height > 175) r += 2;
+  if (p.position) r += 3;
+  return Math.min(99, Math.round(r));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PHOTO UPLOAD
+═══════════════════════════════════════════════════════════ */
+function triggerPhotoUpload() {
+  document.getElementById('photoInput').click();
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('Photo must be under 2MB', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const dataUrl = reader.result;
+    try {
+      await db.ref(`players/${A.user.uid}/photoURL`).set(dataUrl);
+      A.profile.photoURL = dataUrl;
+      renderAvatar('modalAvatar', A.profile, 'av-80');
+      renderAvatar('profileAvatar', A.profile, 'av-120');
+      renderAvatar('navAvatar', A.profile, 'av-32');
+      toast('Photo updated!', 'success');
+    } catch(err) {
+      toast('Upload failed: ' + err.message, 'error');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   VIDEOS
+═══════════════════════════════════════════════════════════ */
+let selectedVideoFile = null;
+
+function handleVideoFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  selectedVideoFile = file;
+  const info = document.getElementById('videoFileInfo');
+  info.style.display = 'block';
+  info.textContent = `${file.name} — ${(file.size/1024/1024).toFixed(1)} MB`;
+}
+
+async function uploadVideo() {
+  if (!A.user) return;
+  const title = document.getElementById('vt-title').value.trim();
+  const type = document.getElementById('vt-type').value;
+  const desc = document.getElementById('vt-desc').value.trim();
+  const errEl = document.getElementById('vt-error');
+  errEl.style.display = 'none';
+  if (!title) { showErr(errEl, 'Please add a title.'); return; }
+
+  const btn = document.getElementById('vtUploadBtn');
+  setBtnLoading(btn, true);
+
+  const videoData = {
+    uid: A.user.uid,
+    title,
+    type,
+    description: desc,
+    views: 0,
+    playerName: A.profile?.name || '',
+    ts: Date.now()
+  };
+
+  if (selectedVideoFile) {
+    const prog = document.getElementById('vt-progress');
+    const bar = document.getElementById('vtProgressBar');
+    prog.style.display = 'block';
+    let p = 0;
+    const iv = setInterval(() => {
+      p = Math.min(95, p + Math.random() * 15);
+      bar.style.width = p + '%';
+      if (p >= 95) clearInterval(iv);
+    }, 200);
+    await new Promise(res => setTimeout(res, 1200));
+    clearInterval(iv);
+    bar.style.width = '100%';
+    videoData.fileName = selectedVideoFile.name;
+    videoData.fileSize = selectedVideoFile.size;
+  }
+
+  try {
+    await db.ref(`videos/${A.user.uid}`).push(videoData);
+    await pushNotif(A.user.uid, { type:'video', icon:'🎬', text:`Your video "${title}" was uploaded!`, read: false, ts: Date.now() });
+    closeModal('modalUploadVideo');
+    toast('Video uploaded!', 'success');
+    selectedVideoFile = null;
+    document.getElementById('vt-title').value = '';
+    document.getElementById('vt-desc').value = '';
+    document.getElementById('videoFileInfo').style.display = 'none';
+    document.getElementById('vt-progress').style.display = 'none';
+    document.getElementById('vtProgressBar').style.width = '0%';
+    loadVideos();
+    loadProfileVideosPreview();
+  } catch(e) {
+    showErr(errEl, e.message);
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+function loadVideos() {
+  if (!A.user) return;
+  const grid = document.getElementById('videosGrid');
+  if (!grid) return;
+  db.ref(`videos/${A.user.uid}`).orderByChild('ts').on('value', snap => {
+    const videos = [];
+    snap.forEach(c => videos.push({ id: c.key, ...c.val() }));
+    videos.reverse();
+    setText('homeVideos', videos.length);
+    if (!videos.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <div style="font-size:14px;margin-bottom:10px">No videos yet.</div>
+        <button class="btn btn-secondary btn-sm" onclick="openModal('modalUploadVideo')">Upload your first highlight</button>
+      </div>`;
+      return;
+    }
+    grid.innerHTML = videos.map(v => videoCardHTML(v)).join('');
+  });
+}
+
+function loadProfileVideosPreview() {
+  if (!A.user) return;
+  const el = document.getElementById('profileVideosPreview');
+  if (!el) return;
+  db.ref(`videos/${A.user.uid}`).orderByChild('ts').limitToLast(2).once('value', snap => {
+    const videos = [];
+    snap.forEach(c => videos.push({ id: c.key, ...c.val() }));
+    videos.reverse();
+    if (!videos.length) {
+      el.innerHTML = `<button class="btn btn-secondary btn-sm" style="width:fit-content" onclick="showTab('videos');openModal('modalUploadVideo')">+ Upload first video</button>`;
+      return;
+    }
+    el.innerHTML = videos.map(v => videoCardHTML(v, true)).join('');
+  });
+}
+
+/* ── Video card HTML ── */
+const thumbBgs = ['#0d1b2a','#1a0d2e','#0d2a1a','#2a1a0d','#0d1a2a','#1a2a0d'];
+
+function videoCardHTML(v, compact = false) {
+  const bg = thumbBgs[Math.abs(hashStr(v.id||v.title||'x')) % thumbBgs.length];
+  const typeColors = { 'Highlights':'badge-gold', 'Full match':'badge-blue', 'Training':'badge-green', 'Goal reel':'badge-red' };
+  const typeClass = typeColors[v.type] || 'badge-white';
+  const size = (v.fileSize ? (v.fileSize/1024/1024).toFixed(1)+' MB' : '');
+  return `
+    <div class="video-card" onclick="openVideoDetail('${esc(v.id||'')}','${esc(v.uid||A.user?.uid||'')}')">
+      <div class="video-thumb" style="background:${bg}">
+        <div class="video-play">
+          <svg width="16" height="16" fill="${bg}" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+        </div>
+        <div style="position:absolute;bottom:8px;left:8px"><span class="badge ${typeClass}">${esc(v.type||'Video')}</span></div>
+        ${v.views ? `<div style="position:absolute;bottom:8px;right:8px;font-size:11px;color:rgba(255,255,255,.6)">${v.views} views</div>` : ''}
+      </div>
+      <div class="video-info">
+        <div style="font-size:14px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(v.title)}</div>
+        <div class="t-sm">${timeAgo(v.ts)}${size ? ' · '+size : ''}</div>
+        ${v.description ? `<div class="t-sm" style="margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(v.description)}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function openVideoDetail(videoId, uid) {
+  // Open a simple info modal or increment views
+  if (uid && videoId) {
+    db.ref(`videos/${uid}/${videoId}/views`).transaction(v => (v||0)+1);
+  }
+  toast('Video playback — link your video URL to embed here.', 'info');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RANKINGS
+═══════════════════════════════════════════════════════════ */
+function loadRankings() {
+  const el = document.getElementById('rankingsList');
+  if (!el) return;
+  el.innerHTML = '<div class="empty-state">Loading...</div>';
+
+  const country = document.getElementById('rankCountryFilter')?.value || '';
+  const pos = document.getElementById('rankPosFilter')?.value || '';
+
+  db.ref('players').orderByChild('rating').once('value', snap => {
+    const players = [];
+    snap.forEach(c => {
+      const p = { id: c.key, ...c.val() };
+      if (!p.name) return;
+      if (country && p.country !== country) return;
+      if (pos && p.position !== pos) return;
+      players.push(p);
+    });
+    players.sort((a,b) => (b.rating||0) - (a.rating||0));
+
+    if (!players.length) {
+      el.innerHTML = '<div class="empty-state">No players found for these filters.</div>';
+      return;
+    }
+
+    // Update my rank
+    if (A.user) {
+      const myIdx = players.findIndex(p => p.id === A.user.uid);
+      if (myIdx !== -1) {
+        const rankNum = myIdx + 1;
+        setText('homeRank', '#' + rankNum);
+        setText('profileWorldRank', '#' + rankNum);
+        db.ref(`players/${A.user.uid}/worldRank`).set(rankNum);
+      }
+    }
+
+    el.innerHTML = players.slice(0,50).map((p, i) => {
+      const rank = i + 1;
+      const rankClass = rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : '';
+      const isMine = A.user && p.id === A.user.uid;
+      return `
+        <div class="rank-row" onclick="showPlayerModal(${JSON.stringify(JSON.stringify(p))})" style="${isMine ? 'background:var(--white08)' : ''}">
+          <div class="rank-num ${rankClass}">${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : '#'+rank}</div>
+          ${renderAvatarInline(p,'av-40')}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${esc(p.name)}${isMine ? ' <span class="badge badge-blue" style="font-size:9px">You</span>' : ''}
+            </div>
+            <div class="t-sm">${[p.position, p.country].filter(Boolean).join(' · ') || 'Player'}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:16px;font-weight:800;letter-spacing:-.02em">${p.rating||50}</div>
+            <div class="t-xs">Rating</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;min-width:60px">
+            <div style="font-size:13px;font-weight:600">${p.goals||0}G · ${p.assists||0}A</div>
+            <div class="t-xs">${p.matches||0} matches</div>
+          </div>
+        </div>`;
+    }).join('');
+  });
+}
+
+/* Home top players mini list */
+function loadHomeTopPlayers() {
+  const el = document.getElementById('homeTopPlayers');
+  if (!el) return;
+  db.ref('players').orderByChild('rating').limitToLast(5).once('value', snap => {
+    const players = [];
+    snap.forEach(c => players.push({ id: c.key, ...c.val() }));
+    players.sort((a,b) => (b.rating||0) - (a.rating||0));
+    if (!players.length) { el.innerHTML = '<div class="t-sm">No players yet.</div>'; return; }
+    el.innerHTML = players.map((p, i) => `
+      <div class="rank-row" onclick="showPlayerModal(${JSON.stringify(JSON.stringify(p))})" style="padding:9px 10px">
+        <div class="rank-num ${i===0?'r1':i===1?'r2':i===2?'r3':''}" style="font-size:14px;min-width:28px">#${i+1}</div>
+        ${renderAvatarInline(p,'av-32')}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
+          <div class="t-sm">${p.position||'Player'}</div>
+        </div>
+        <div style="font-size:13px;font-weight:700">${p.rating||50}</div>
+      </div>`).join('');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATIONS
+═══════════════════════════════════════════════════════════ */
+function renderNotifList(notifs) {
+  const el = document.getElementById('notifList');
+  const sub = document.getElementById('notifSubtitle');
+  if (!el) return;
+  const unread = notifs.filter(n => !n.read).length;
+  if (sub) sub.textContent = unread > 0 ? `${unread} unread notification${unread > 1 ? 's' : ''}` : 'All caught up!';
+  if (!notifs.length) {
+    el.innerHTML = '<div class="empty-state">No notifications yet.</div>';
+    return;
+  }
+  el.innerHTML = notifs.map(n => `
+    <div class="notif-item" onclick="markNotifRead('${n.id}')">
+      ${!n.read ? '<div class="notif-dot"></div>' : '<div style="width:7px"></div>'}
+      <span style="font-size:22px;line-height:1;flex-shrink:0">${esc(n.icon||'📌')}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:${n.read ? '400' : '600'}">${esc(n.text)}</div>
+        <div class="t-sm" style="margin-top:3px">${timeAgo(n.ts)}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function markNotifRead(id) {
+  if (!A.user || !id) return;
+  await db.ref(`notifications/${A.user.uid}/${id}/read`).set(true);
+}
+
+async function markAllNotifsRead() {
+  if (!A.user) return;
+  const snap = await db.ref(`notifications/${A.user.uid}`).once('value');
+  const updates = {};
+  snap.forEach(c => { updates[`${c.key}/read`] = true; });
+  await db.ref(`notifications/${A.user.uid}`).update(updates);
+  toast('All notifications marked as read.', 'success');
+}
+
+function updateNotifBadge() {
+  const badge = document.getElementById('navNotifBadge');
+  const sbBadge = document.getElementById('sbNotifCount');
+  if (badge) {
+    badge.textContent = A.notifCount;
+    badge.classList.toggle('show', A.notifCount > 0);
+  }
+  if (sbBadge) {
+    sbBadge.textContent = A.notifCount;
+    sbBadge.style.display = A.notifCount > 0 ? 'inline-flex' : 'none';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════════════════ */
+async function saveDisplayName() {
+  if (!A.user) return;
+  const name = document.getElementById('settingsName').value.trim();
+  if (!name) { toast('Name cannot be empty.', 'error'); return; }
+  try {
+    await db.ref(`players/${A.user.uid}/name`).set(name);
+    await db.ref(`users/${A.user.uid}/displayName`).set(name);
+    await auth.currentUser.updateProfile({ displayName: name });
+    if (A.profile) A.profile.name = name;
+    renderAvatar('navAvatar', A.profile, 'av-32');
+    toast('Display name updated!', 'success');
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+async function savePrivacySetting(id, value) {
+  if (!A.user) return;
+  const key = id === 'settingsPublic' ? 'public' : 'showInRankings';
+  const trackEl = document.getElementById(id + 'Track');
+  if (trackEl) {
+    trackEl.style.background = value ? 'var(--green-light)' : 'var(--surface4)';
+    const thumb = trackEl.querySelector('div');
+    if (thumb) thumb.style.transform = value ? 'translateX(0)' : 'translateX(-20px)';
+  }
+  try {
+    await db.ref(`users/${A.user.uid}/${key}`).set(value);
+    await db.ref(`players/${A.user.uid}/${key}`).set(value);
+    toast(`Setting updated.`, 'success');
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DISCOVER PAGE
+═══════════════════════════════════════════════════════════ */
+function loadDiscoverPlayers() {
+  db.ref('players').once('value', snap => {
+    A.discoverPlayers = [];
+    snap.forEach(c => {
+      const p = { id: c.key, ...c.val() };
+      if (p.name) A.discoverPlayers.push(p);
+    });
+    A.discoverPlayers.sort((a,b) => (b.rating||0) - (a.rating||0));
+    applyDiscoverFilters();
+  });
+}
+
+function applyDiscoverFilters() {
+  const search = (document.getElementById('discSearch')?.value || '').toLowerCase();
+  const pos = document.getElementById('discPosFilter')?.value || '';
+  const country = document.getElementById('discCountryFilter')?.value || '';
+  const age = A.ageFilter || '';
+
+  let filtered = A.discoverPlayers.filter(p => {
+    if (search && !p.name.toLowerCase().includes(search)) return false;
+    if (pos && p.position !== pos) return false;
+    if (country && p.country !== country) return false;
+    if (age === 'u18' && (p.age <= 0 || p.age > 17)) return false;
+    if (age === 'u21' && (p.age <= 0 || p.age > 20)) return false;
+    if (age === 'u25' && (p.age <= 0 || p.age > 24)) return false;
+    if (age === 'senior' && p.age < 25) return false;
+    return true;
+  });
+
+  const count = document.getElementById('discCount');
+  if (count) count.textContent = `${filtered.length} player${filtered.length !== 1 ? 's' : ''} found`;
+
+  const grid = document.getElementById('discContent');
+  if (!grid) return;
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No players match your filters.</div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(p => playerCardHTML(p)).join('');
+}
+
+function selectChip(el, group) {
+  document.querySelectorAll(`#discChips .chip`).forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  A.ageFilter = el.dataset.age || '';
+  applyDiscoverFilters();
+}
+
+function switchDiscoverTab(tab) {
+  A.discoverTab = tab;
+  document.getElementById('discTabPlayers').classList.toggle('active', tab === 'players');
+  document.getElementById('discTabClubs').classList.toggle('active', tab === 'clubs');
+  if (tab === 'clubs') {
+    const grid = document.getElementById('discContent');
+    const count = document.getElementById('discCount');
+    if (count) count.textContent = '';
+    if (grid) grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Club directory coming soon.</div>';
+  } else {
+    applyDiscoverFilters();
+  }
+}
+
+/* Player card HTML (for discover + landing) */
+function playerCardHTML(p) {
+  const av = renderAvatarInline(p, 'av-56');
+  const posColor = { Goalkeeper:'badge-gold', Defender:'badge-blue', Midfielder:'badge-green', Winger:'badge-purple', Striker:'badge-red' };
+  const posClass = posColor[p.position] || 'badge-white';
+  return `
+    <div class="player-card" onclick="showPlayerModal(${JSON.stringify(JSON.stringify(p))})">
+      <div class="pc-header">
+        ${av}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">${esc(p.name)}</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+            ${p.position ? `<span class="badge ${posClass}">${esc(p.position)}</span>` : ''}
+            ${p.verified ? `<span class="badge badge-green">✓</span>` : ''}
+          </div>
+          <div class="t-sm" style="margin-top:4px">${[p.city, p.country].filter(Boolean).join(', ') || '—'}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:22px;font-weight:900;letter-spacing:-.03em;line-height:1">${p.rating||50}</div>
+          <div class="t-xs">Rating</div>
+        </div>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><div class="pc-stat-val">${p.goals??'—'}</div><div class="pc-stat-lbl">Goals</div></div>
+        <div class="pc-stat"><div class="pc-stat-val">${p.assists??'—'}</div><div class="pc-stat-lbl">Assists</div></div>
+        <div class="pc-stat"><div class="pc-stat-val">${p.matches??'—'}</div><div class="pc-stat-lbl">Matches</div></div>
+      </div>
+      ${p.age || p.height ? `<div class="t-sm" style="margin-top:10px">${[p.age ? p.age+'y' : '', p.height ? p.height+'cm' : '', p.foot ? p.foot+' foot' : ''].filter(Boolean).join(' · ')}</div>` : ''}
+    </div>`;
+}
+
+/* Player modal */
+function showPlayerModal(jsonStr) {
+  const p = JSON.parse(jsonStr);
+  const body = document.getElementById('modalPlayerBody');
+  if (!body) return;
+  const av = renderAvatarInline(p, 'av-80');
+  const posColor = { Goalkeeper:'badge-gold', Defender:'badge-blue', Midfielder:'badge-green', Winger:'badge-purple', Striker:'badge-red' };
+  const posClass = posColor[p.position] || 'badge-white';
+  body.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
+      ${av}
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="font-size:18px;font-weight:700">${esc(p.name)}</span>
+          ${p.verified ? '<span class="badge badge-green">✓ Verified</span>' : ''}
+        </div>
+        ${p.position ? `<span class="badge ${posClass}" style="margin-bottom:6px">${esc(p.position)}</span>` : ''}
+        <div class="t-sm">${[p.city, p.country].filter(Boolean).join(', ') || '—'}</div>
+        ${p.club ? `<div class="t-sm" style="margin-top:2px">🏟 ${esc(p.club)}</div>` : ''}
+      </div>
+      <div style="text-align:center;padding:8px 14px;background:var(--surface2);border-radius:var(--r)">
+        <div style="font-size:28px;font-weight:900;letter-spacing:-.03em">${p.rating||50}</div>
+        <div class="t-xs">Rating</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="pc-stat"><div class="pc-stat-val">${p.goals??'—'}</div><div class="pc-stat-lbl">Goals</div></div>
+      <div class="pc-stat"><div class="pc-stat-val">${p.assists??'—'}</div><div class="pc-stat-lbl">Assists</div></div>
+      <div class="pc-stat"><div class="pc-stat-val">${p.matches??'—'}</div><div class="pc-stat-lbl">Matches</div></div>
+      <div class="pc-stat"><div class="pc-stat-val">${p.minutesPlayed||'—'}</div><div class="pc-stat-lbl">Minutes</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:${p.bio ? '16px' : '0'}">
+      ${p.age ? `<div style="padding:10px;background:var(--surface2);border-radius:var(--r)"><div class="t-xs">Age</div><div style="font-weight:600;margin-top:2px">${p.age} years</div></div>` : ''}
+      ${p.height ? `<div style="padding:10px;background:var(--surface2);border-radius:var(--r)"><div class="t-xs">Height</div><div style="font-weight:600;margin-top:2px">${p.height} cm</div></div>` : ''}
+      ${p.weight ? `<div style="padding:10px;background:var(--surface2);border-radius:var(--r)"><div class="t-xs">Weight</div><div style="font-weight:600;margin-top:2px">${p.weight} kg</div></div>` : ''}
+      ${p.foot ? `<div style="padding:10px;background:var(--surface2);border-radius:var(--r)"><div class="t-xs">Strong foot</div><div style="font-weight:600;margin-top:2px">${esc(p.foot)}</div></div>` : ''}
+    </div>
+    ${p.bio ? `<div style="padding:14px;background:var(--surface2);border-radius:var(--r)"><div class="t-xs" style="margin-bottom:6px">About</div><p class="t-body" style="font-size:13px">${esc(p.bio)}</p></div>` : ''}
+    <div style="margin-top:16px;display:flex;gap:8px">
+      ${A.user ? `<button class="btn btn-primary" style="flex:1;justify-content:center" onclick="contactPlayer('${esc(p.name)}');closeModal('modalPlayer')">Contact player</button>` : `<button class="btn btn-primary" style="flex:1;justify-content:center" onclick="goTo('register');closeModal('modalPlayer')">Join to contact</button>`}
+    </div>`;
+  openModal('modalPlayer');
+  // Increment view count
+  if (p.id) db.ref(`players/${p.id}/profileViews`).transaction(v => (v||0)+1);
+}
+
+function contactPlayer(name) {
+  toast(`Message sent to ${name}! (feature coming soon)`, 'success');
+  if (A.user) pushNotif(A.user.uid, { type:'contact', icon:'✉️', text:`You contacted ${name}.`, read:false, ts:Date.now() });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LANDING STATS + PLAYERS
+═══════════════════════════════════════════════════════════ */
+function loadLandingStats() {
+  db.ref('players').once('value', snap => {
+    setText('statPlayers', snap.numChildren().toLocaleString());
+  });
+  db.ref('users').orderByChild('role').equalTo('club').once('value', snap => {
+    setText('statClubs', Math.max(snap.numChildren(), 1).toLocaleString());
+  });
+}
+
+function loadLandingPlayers() {
+  const grid = document.getElementById('landingPlayerGrid');
+  if (!grid) return;
+  db.ref('players').orderByChild('rating').limitToLast(6).once('value', snap => {
+    const players = [];
+    snap.forEach(c => {
+      const p = { id: c.key, ...c.val() };
+      if (p.name) players.push(p);
+    });
+    players.sort((a,b) => (b.rating||0) - (a.rating||0));
+    if (!players.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Be the first to join ELEVN!</div>';
+      return;
+    }
+    grid.innerHTML = players.map(p => playerCardHTML(p)).join('');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN
+═══════════════════════════════════════════════════════════ */
+const ADMIN_UIDS = []; // Add admin UIDs here
+
+function adminTab(tab, el) {
+  document.querySelectorAll('.admin-si').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  const main = document.getElementById('adminContent');
+  if (!main) return;
+
+  if (tab === 'overview') {
+    main.innerHTML = '<div style="display:flex;flex-direction:column;gap:20px"><div class="t-h2">Overview</div><div class="stat-grid" id="adminStats"><div class="t-sm">Loading...</div></div></div>';
+    Promise.all([
+      db.ref('players').once('value'),
+      db.ref('users').once('value'),
+      db.ref('videos').once('value')
+    ]).then(([pSnap, uSnap, vSnap]) => {
+      let totalVideos = 0;
+      vSnap.forEach(u => { totalVideos += u.numChildren(); });
+      document.getElementById('adminStats').innerHTML = `
+        <div class="stat-card"><div class="stat-val">${pSnap.numChildren()}</div><div class="stat-lbl">Players</div></div>
+        <div class="stat-card"><div class="stat-val">${uSnap.numChildren()}</div><div class="stat-lbl">Users</div></div>
+        <div class="stat-card"><div class="stat-val">${totalVideos}</div><div class="stat-lbl">Videos</div></div>`;
+    });
+
+  } else if (tab === 'users') {
+    main.innerHTML = '<div class="t-h2" style="margin-bottom:18px">Users</div><div id="adminUserTable"><div class="t-sm">Loading...</div></div>';
+    db.ref('users').once('value', snap => {
+      const users = [];
+      snap.forEach(c => users.push({ id: c.key, ...c.val() }));
+      users.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+      const table = document.getElementById('adminUserTable');
+      if (!table) return;
+      if (!users.length) { table.innerHTML = '<div class="t-sm">No users yet.</div>'; return; }
+      table.innerHTML = `<div class="tbl-wrap"><table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody>${users.map(u => `
+          <tr>
+            <td style="font-weight:600">${esc(u.displayName||'—')}</td>
+            <td class="t-sm">${esc(u.email||'—')}</td>
+            <td><span class="badge badge-white">${esc(u.role||'player')}</span></td>
+            <td class="t-sm">${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
+            <td><button class="btn btn-success btn-sm" onclick="adminVerifyUser('${u.id}')">Verify</button></td>
+          </tr>`).join('')}
+        </tbody></table></div>`;
+    });
+
+  } else if (tab === 'verification') {
+    main.innerHTML = '<div class="t-h2" style="margin-bottom:18px">Verification requests</div><div id="adminVerifList"><div class="t-sm">Loading...</div></div>';
+    db.ref('players').orderByChild('verified').equalTo(false).once('value', snap => {
+      const players = [];
+      snap.forEach(c => players.push({ id: c.key, ...c.val() }));
+      const el = document.getElementById('adminVerifList');
+      if (!el) return;
+      if (!players.length) { el.innerHTML = '<div class="empty-state">No pending verifications.</div>'; return; }
+      el.innerHTML = players.map(p => `
+        <div class="card" style="display:flex;align-items:center;gap:14px;margin-bottom:10px">
+          ${renderAvatarInline(p,'av-40')}
+          <div style="flex:1"><div style="font-weight:600">${esc(p.name||'—')}</div><div class="t-sm">${esc(p.position||'')} · ${esc(p.country||'')}</div></div>
+          <button class="btn btn-success btn-sm" onclick="adminVerifyUser('${p.id}')">Verify</button>
+        </div>`).join('');
+    });
+
+  } else if (tab === 'videos-admin') {
+    main.innerHTML = '<div class="t-h2" style="margin-bottom:18px">Videos</div><div id="adminVideoList"><div class="t-sm">Loading...</div></div>';
+    db.ref('videos').once('value', snap => {
+      const allVideos = [];
+      snap.forEach(userNode => {
+        userNode.forEach(vid => allVideos.push({ id: vid.key, uid: userNode.key, ...vid.val() }));
+      });
+      allVideos.sort((a,b) => (b.ts||0) - (a.ts||0));
+      const el = document.getElementById('adminVideoList');
+      if (!el) return;
+      if (!allVideos.length) { el.innerHTML = '<div class="empty-state">No videos yet.</div>'; return; }
+      el.innerHTML = `<div class="tbl-wrap"><table>
+        <thead><tr><th>Title</th><th>Player</th><th>Type</th><th>Views</th><th>Uploaded</th><th>Action</th></tr></thead>
+        <tbody>${allVideos.map(v => `
+          <tr>
+            <td style="font-weight:600">${esc(v.title||'—')}</td>
+            <td class="t-sm">${esc(v.playerName||v.uid||'—')}</td>
+            <td><span class="badge badge-white">${esc(v.type||'—')}</span></td>
+            <td>${v.views||0}</td>
+            <td class="t-sm">${v.ts ? new Date(v.ts).toLocaleDateString() : '—'}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="adminDeleteVideo('${v.uid}','${v.id}')">Delete</button></td>
+          </tr>`).join('')}
+        </tbody></table></div>`;
+    });
+  }
+}
+
+async function adminVerifyUser(uid) {
+  await db.ref(`players/${uid}/verified`).set(true);
+  await db.ref(`users/${uid}/verified`).set(true);
+  await pushNotif(uid, { type:'verified', icon:'✅', text:'Your ELEVN profile has been verified!', read:false, ts:Date.now() });
+  toast('Player verified!', 'success');
+}
+
+async function adminDeleteVideo(uid, videoId) {
+  if (!confirm('Delete this video?')) return;
+  await db.ref(`videos/${uid}/${videoId}`).remove();
+  toast('Video deleted.', 'info');
+  document.querySelector('.admin-si.active')?.click();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ROUTING
+═══════════════════════════════════════════════════════════ */
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(`page-${page}`);
+  if (!el) return;
+  el.classList.add('active');
+  A.currentPage = page;
+  window.scrollTo(0,0);
+
+  if (page === 'dashboard') {
+    showTab(A.currentTab || 'home');
+    loadRankings();
+    loadHomeTopPlayers();
+    if (A.user) loadVideos();
+  }
+  if (page === 'discover') {
+    loadDiscoverPlayers();
+    if (A.user) {
+      const cta = document.getElementById('discoverNavCta');
+      if (cta) cta.textContent = 'Dashboard';
+    }
+  }
+  if (page === 'admin') {
+    adminTab('overview', document.querySelector('.admin-si'));
+  }
+}
+
+function showTab(tab) {
+  A.currentTab = tab;
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById(`dash-${tab}`);
+  if (el) el.classList.add('active');
+
+  // Sidebar
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  const sbEl = document.getElementById(`sb-${tab}`);
+  if (sbEl) sbEl.classList.add('active');
+
+  // Bottom nav
+  document.querySelectorAll('.bn-item').forEach(i => i.classList.remove('active'));
+  const bnEl = document.getElementById(`bn-${tab}`);
+  if (bnEl) bnEl.classList.add('active');
+
+  if (tab === 'rankings') loadRankings();
+  if (tab === 'videos' && A.user) loadVideos();
+  if (tab === 'home') loadHomeTopPlayers();
+}
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODAL HELPERS
+═══════════════════════════════════════════════════════════ */
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOnBg(e, id) {
+  if (e.target === document.getElementById(id)) closeModal(id);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DROPDOWN
+═══════════════════════════════════════════════════════════ */
+function toggleDD(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
+function closeDD(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  document.querySelectorAll('.dd-menu.open').forEach(menu => {
+    if (!menu.parentElement.contains(e.target)) menu.classList.remove('open');
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════ */
+function toast(msg, type = 'info') {
+  const stack = document.getElementById('toastStack');
+  if (!stack) return;
+  const icons = { success:'✓', error:'✕', info:'ℹ', warning:'⚠' };
+  const colors = { success:'var(--green-light)', error:'var(--red-light)', info:'var(--white60)', warning:'var(--gold-light)' };
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span style="color:${colors[type]};font-weight:700;font-size:14px">${icons[type]||'ℹ'}</span><span>${esc(msg)}</span>`;
+  stack.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('out');
+    setTimeout(() => t.remove(), 300);
+  }, 3500);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UI UTILITIES
+═══════════════════════════════════════════════════════════ */
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function showErr(el, msg) {
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function setBtnLoading(btn, loading) {
+  if (!btn) return;
+  if (loading) {
+    btn.dataset.origText = btn.innerHTML;
+    btn.innerHTML = '<div class="spinner"></div>';
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = btn.dataset.origText || 'Submit';
+    btn.disabled = false;
+  }
+}
+
+function updateNavAvatar() {
+  if (A.user && A.profile) renderAvatar('navAvatar', A.profile, 'av-32');
+}
+
+function esc(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function strToColor(str) {
+  const colors = ['#1a4d2e','#1e3a5f','#4a1942','#5c2a00','#1a3a4a','#2d1b69','#4a2800','#1a4040'];
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function hashStr(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return hash;
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString();
+}
+
+function friendlyAuthError(code) {
+  const msgs = {
+    'auth/user-not-found': 'No account found with this email.',
+    'auth/wrong-password': 'Incorrect password.',
+    'auth/email-already-in-use': 'This email is already registered.',
+    'auth/weak-password': 'Password is too weak.',
+    'auth/invalid-email': 'Invalid email address.',
+    'auth/too-many-requests': 'Too many attempts. Please try again later.',
+    'auth/popup-closed-by-user': 'Sign-in cancelled.'
+  };
+  return msgs[code] || 'Something went wrong. Please try again.';
+}
+</script>
+</body>
+</html>
