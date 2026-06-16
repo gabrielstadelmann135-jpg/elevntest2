@@ -1,0 +1,2958 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ELEVN — Every player deserves a chance.</title>
+<meta name="description" content="ELEVN est le passeport football mondial. Découvrez des talents, construisez des clubs, changez des carrières.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+
+<!-- PayPal SDK (sandbox) — remplacer data-client-id par votre ID production -->
+<script src="https://www.paypal.com/sdk/js?client-id=sb&vault=true&intent=subscription&currency=EUR" data-sdk-integration-source="button-factory" id="paypalScript" defer></script>
+
+<style>
+:root{
+  --black:#000;--near-black:#080808;--surface:#111;--surface2:#181818;
+  --surface3:#222;--surface4:#2a2a2a;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--border3:rgba(255,255,255,.22);
+  --white:#fff;--white90:rgba(255,255,255,.9);--white60:rgba(255,255,255,.6);
+  --white35:rgba(255,255,255,.35);--white15:rgba(255,255,255,.15);--white08:rgba(255,255,255,.08);
+  --green:#16a34a;--green-light:#22c55e;--green-bg:rgba(34,197,94,.1);--green-border:rgba(34,197,94,.2);
+  --blue:#2563eb;--blue-light:#3b82f6;--blue-bg:rgba(59,130,246,.1);--blue-border:rgba(59,130,246,.2);
+  --gold:#d97706;--gold-light:#f59e0b;--gold-bg:rgba(245,158,11,.1);--gold-border:rgba(245,158,11,.2);
+  --red:#dc2626;--red-light:#ef4444;--red-bg:rgba(239,68,68,.1);--red-border:rgba(239,68,68,.2);
+  --purple-bg:rgba(168,85,247,.1);--purple:#a855f7;--purple-border:rgba(168,85,247,.25);
+  --paypal:#003087;--paypal-gold:#ffc439;
+  --r:10px;--r-lg:16px;--r-xl:22px;--r-full:9999px;
+  --nav-h:60px;--sidebar-w:236px;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--black);color:var(--white);
+  -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface4);border-radius:2px}
+::selection{background:rgba(255,255,255,.2)}
+
+.t-display{font-size:clamp(52px,8.5vw,108px);font-weight:900;line-height:.96;letter-spacing:-.04em}
+.t-h1{font-size:clamp(30px,4.5vw,54px);font-weight:800;line-height:1.05;letter-spacing:-.03em}
+.t-h2{font-size:clamp(22px,3vw,34px);font-weight:700;letter-spacing:-.025em;line-height:1.1}
+.t-h3{font-size:18px;font-weight:600;letter-spacing:-.015em}
+.t-h4{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.t-body{font-size:15px;line-height:1.75;color:var(--white60)}
+.t-sm{font-size:13px;line-height:1.5;color:var(--white35)}
+.t-xs{font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--white35)}
+.t-mono{font-variant-numeric:tabular-nums}
+
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+
+.btn{display:inline-flex;align-items:center;gap:7px;border-radius:var(--r);font-size:14px;
+  font-weight:600;padding:10px 20px;transition:all .18s var(--ease);white-space:nowrap;cursor:pointer}
+.btn-primary{background:var(--white);color:var(--black)}
+.btn-primary:hover{background:var(--white90);transform:translateY(-1px)}
+.btn-primary:active{transform:scale(.98)}
+.btn-secondary{background:transparent;color:var(--white);border:1px solid var(--border2)}
+.btn-secondary:hover{background:var(--white08);border-color:var(--border3)}
+.btn-ghost{background:transparent;color:var(--white60);padding:8px 14px}
+.btn-ghost:hover{color:var(--white);background:var(--white08)}
+.btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
+.btn-lg{padding:14px 30px;font-size:16px;border-radius:12px}
+.btn-icon{width:36px;height:36px;padding:0;display:inline-flex;align-items:center;
+  justify-content:center;border-radius:8px;flex-shrink:0}
+.btn-danger{background:var(--red-bg);color:var(--red-light);border:1px solid var(--red-border)}
+.btn-danger:hover{background:rgba(239,68,68,.18)}
+.btn-success{background:var(--green-bg);color:var(--green-light);border:1px solid var(--green-border)}
+.btn-blue{background:var(--blue-light);color:#fff}
+.btn-blue:hover{background:#2563eb}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-purple:hover{background:#9333ea}
+.btn-paypal{background:var(--paypal-gold);color:#003087;font-weight:700}
+.btn-paypal:hover{background:#e6b030}
+
+.inp{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--white);font-size:14px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--border3)}
+.inp::placeholder{color:var(--white35)}
+.inp-group{display:flex;flex-direction:column;gap:5px}
+.inp-label{font-size:12px;font-weight:500;color:var(--white60)}
+.inp-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,.4)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
+.inp-search-wrap{position:relative}
+.inp-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--white35);pointer-events:none}
+.inp-search{padding-left:38px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:22px}
+.card-hover{transition:border-color .2s,transform .2s var(--ease)}
+.card-hover:hover{border-color:var(--border2);transform:translateY(-2px)}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:var(--r-full);
+  font-size:11px;font-weight:600;letter-spacing:.04em}
+.badge-green{background:var(--green-bg);color:var(--green-light);border:1px solid var(--green-border)}
+.badge-blue{background:var(--blue-bg);color:var(--blue-light);border:1px solid var(--blue-border)}
+.badge-gold{background:var(--gold-bg);color:var(--gold-light);border:1px solid var(--gold-border)}
+.badge-red{background:var(--red-bg);color:var(--red-light);border:1px solid var(--red-border)}
+.badge-white{background:var(--white08);color:var(--white60);border:1px solid var(--border)}
+.badge-purple{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:700;flex-shrink:0;overflow:hidden;background:var(--surface3)}
+.av img{width:100%;height:100%;object-fit:cover}
+.av-32{width:32px;height:32px;font-size:12px}
+.av-40{width:40px;height:40px;font-size:15px}
+.av-56{width:56px;height:56px;font-size:20px}
+.av-80{width:80px;height:80px;font-size:28px}
+.av-120{width:120px;height:120px;font-size:42px;border:3px solid var(--border2)}
+
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--nav-h);
+  display:flex;align-items:center;justify-content:space-between;padding:0 20px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid var(--border)}
+.nav-logo{font-size:19px;font-weight:900;letter-spacing:-.04em;cursor:pointer;user-select:none}
+.nav-center{display:flex;align-items:center;gap:2px}
+.nav-link{padding:7px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--white60);
+  cursor:pointer;transition:all .15s}
+.nav-link:hover{color:var(--white);background:var(--white08)}
+.nav-link.active{color:var(--white)}
+.nav-right{display:flex;align-items:center;gap:8px}
+
+.sidebar{position:fixed;top:var(--nav-h);left:0;bottom:0;width:var(--sidebar-w);
+  background:var(--near-black);border-right:1px solid var(--border);z-index:100;
+  display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-body{padding:12px;flex:1;display:flex;flex-direction:column;gap:1px}
+.sidebar-section{padding:14px 12px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--white35)}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;
+  font-size:13px;font-weight:500;color:var(--white60);cursor:pointer;transition:all .15s;position:relative}
+.sb-item:hover{color:var(--white);background:var(--white08)}
+.sb-item.active{color:var(--white);background:var(--white08)}
+.sb-item svg{width:17px;height:17px;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--blue-light);color:#fff;font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:var(--r-full)}
+
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(0,0,0,.92);backdrop-filter:blur(24px);border-top:1px solid var(--border);
+  padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+.bn-items{display:flex;justify-content:space-around}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;
+  cursor:pointer;color:var(--white35);transition:color .15s}
+.bn-item.active{color:var(--white)}
+.bn-item svg{width:22px;height:22px}
+.bn-label{font-size:9px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+
+.dash-wrap{display:flex}
+.dash-main{flex:1;margin-left:var(--sidebar-w);padding:calc(var(--nav-h) + 28px) 28px 40px}
+.dash-title{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.dash-sub{font-size:14px;color:var(--white35);margin-bottom:28px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px}
+.stat-val{font-size:28px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.stat-lbl{font-size:12px;color:var(--white35);margin-top:4px}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.tabs-bar{display:flex;gap:2px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:3px}
+.tab-pill{padding:7px 16px;border-radius:7px;font-size:13px;font-weight:500;color:var(--white60);
+  cursor:pointer;transition:all .15s}
+.tab-pill.active{background:var(--surface3);color:var(--white)}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.8);
+  backdrop-filter:blur(14px);z-index:300;display:flex;align-items:center;
+  justify-content:center;padding:20px;opacity:0;transition:opacity .2s;pointer-events:none}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:28px;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+  transform:translateY(16px) scale(.98);transition:transform .25s var(--ease)}
+.modal-backdrop.open .modal-box{transform:none}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-close{width:30px;height:30px;border-radius:50%;background:var(--surface3);
+  display:flex;align-items:center;justify-content:center;color:var(--white60);
+  cursor:pointer;transition:all .15s}
+.modal-close:hover{background:var(--surface4);color:var(--white)}
+
+.player-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:18px;cursor:pointer;transition:all .2s var(--ease)}
+.player-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.pc-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.pc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.pc-stat{background:var(--surface2);border-radius:8px;padding:8px;text-align:center}
+.pc-stat-val{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.pc-stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--white35);margin-top:2px}
+
+/* GATED CARD — profil flou pour non-abonnés */
+.player-card-locked{position:relative;overflow:hidden}
+.player-card-locked::after{content:'';position:absolute;inset:0;backdrop-filter:blur(6px);
+  background:rgba(0,0,0,.55);border-radius:var(--r-lg);z-index:2;pointer-events:none}
+.player-card-lock-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:3;text-align:center;pointer-events:none}
+
+.progress{height:3px;background:var(--surface3);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:width .6s var(--ease)}
+
+.toast-stack{position:fixed;top:72px;right:18px;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);
+  padding:11px 16px;font-size:13px;display:flex;align-items:center;gap:9px;
+  min-width:260px;max-width:340px;pointer-events:all;animation:toastIn .28s var(--ease) forwards}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+.toast.out{animation:toastOut .25s var(--ease) forwards}
+@keyframes toastOut{to{transform:translateX(110%);opacity:0}}
+
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:var(--black)}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:36px;width:100%;max-width:420px}
+.auth-logo{font-size:22px;font-weight:900;letter-spacing:-.04em;margin-bottom:24px;cursor:pointer}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0}
+.auth-divider-line{flex:1;height:1px;background:var(--border)}
+.auth-divider-label{font-size:12px;color:var(--white35)}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  padding:11px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;
+  color:var(--white);font-size:14px;font-weight:500;cursor:pointer;transition:background .15s;font-family:'Inter',sans-serif}
+.google-btn:hover{background:var(--white08)}
+
+.profile-cover{height:200px;background:linear-gradient(135deg,var(--surface2),var(--surface3));
+  position:relative;overflow:hidden}
+.profile-pattern{position:absolute;inset:0;
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.015) 0px,rgba(255,255,255,.015) 1px,transparent 1px,transparent 24px)}
+.profile-av-wrap{position:absolute;bottom:-52px;left:28px}
+
+.video-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;cursor:pointer;transition:all .2s var(--ease)}
+.video-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.video-thumb{height:152px;background:var(--surface2);position:relative;display:flex;
+  align-items:center;justify-content:center;overflow:hidden}
+.video-thumb img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.video-play{width:44px;height:44px;background:rgba(255,255,255,.92);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.video-info{padding:12px 14px}
+
+.rank-row{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:var(--r);
+  cursor:pointer;transition:background .15s}
+.rank-row:hover{background:var(--white08)}
+.rank-num{font-size:17px;font-weight:800;min-width:36px;color:var(--white35);font-variant-numeric:tabular-nums}
+.rank-num.r1{color:var(--gold-light)}
+.rank-num.r2{color:var(--white60)}
+.rank-num.r3{color:#cd7f32}
+
+.notif-item{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);
+  border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:border-color .15s}
+.notif-item:hover{border-color:var(--border2)}
+.notif-dot{width:7px;height:7px;background:var(--blue-light);border-radius:50%;flex-shrink:0;margin-top:5px}
+
+.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--r-lg);padding:36px;
+  text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.upload-zone:hover{border-color:var(--border3);background:var(--white08)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+
+.chip{padding:5px 13px;border-radius:var(--r-full);border:1px solid var(--border);font-size:13px;
+  cursor:pointer;color:var(--white60);background:transparent;font-family:inherit;transition:all .15s}
+.chip:hover{border-color:var(--border2);color:var(--white)}
+.chip.on{border-color:var(--border3);color:var(--white);background:var(--white08)}
+
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--white35);
+  letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:13px 14px;border-bottom:1px solid var(--border);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--white08)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:calc(var(--nav-h) + 60px) 20px 80px;
+  position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 0%,transparent 100%)}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 13px;
+  border-radius:var(--r-full);border:1px solid var(--border2);font-size:12px;font-weight:500;
+  color:var(--white60);margin-bottom:28px;background:var(--white08)}
+.pulse{width:6px;height:6px;background:var(--green-light);border-radius:50%;animation:pulse 2.2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+.hero-ctas{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:36px}
+
+.marquee-wrap{overflow:hidden;padding:50px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.marquee{display:flex;gap:14px;animation:scrollL 28s linear infinite;width:max-content}
+.marquee:hover{animation-play-state:paused}
+@keyframes scrollL{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-tag{padding:8px 18px;border-radius:var(--r-full);border:1px solid var(--border);font-size:12px;white-space:nowrap;color:var(--white60)}
+
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.feature-cell{background:var(--black);padding:28px}
+.feature-icon{width:38px;height:38px;margin-bottom:14px}
+
+/* PLAN CARDS */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.plan-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:28px;position:relative;transition:border-color .2s}
+.plan-card.featured{border-color:var(--blue-border);background:var(--surface2)}
+.plan-price{font-size:42px;font-weight:900;letter-spacing:-.04em;line-height:1;margin:14px 0 4px}
+.plan-price sup{font-size:20px;font-weight:700;vertical-align:super}
+.plan-price sub{font-size:14px;font-weight:400;color:var(--white35)}
+.plan-feature{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--white60);padding:5px 0}
+.plan-feature svg{color:var(--green-light);flex-shrink:0;margin-top:1px}
+.plan-feature.locked{color:var(--white35)}
+.plan-feature.locked svg{color:var(--white35)}
+
+/* CERT */
+.cert-status{display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:var(--r);border:1px solid;margin-bottom:16px}
+.cert-pending{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold-light)}
+.cert-verified{background:var(--green-bg);border-color:var(--green-border);color:var(--green-light)}
+.cert-none{background:var(--surface2);border-color:var(--border);color:var(--white60)}
+
+/* PLAN BADGES */
+.plan-badge-starter{background:rgba(255,255,255,.06);color:var(--white60);border:1px solid var(--border);font-size:10px;padding:2px 8px;border-radius:var(--r-full);font-weight:600}
+.plan-badge-pro{background:var(--blue-bg);color:var(--blue-light);border:1px solid var(--blue-border);font-size:10px;padding:2px 8px;border-radius:var(--r-full);font-weight:600}
+.plan-badge-club{background:var(--gold-bg);color:var(--gold-light);border:1px solid var(--gold-border);font-size:10px;padding:2px 8px;border-radius:var(--r-full);font-weight:600}
+.plan-badge-elite{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);font-size:10px;padding:2px 8px;border-radius:var(--r-full);font-weight:600}
+
+/* CONTACT BOX */
+.contact-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px}
+
+/* ADMIN */
+.admin-wrap{display:flex}
+.admin-side{width:200px;background:var(--near-black);border-right:1px solid var(--border);
+  padding:calc(var(--nav-h)+16px) 10px 24px;position:fixed;top:0;left:0;bottom:0}
+.admin-main{margin-left:200px;padding:calc(var(--nav-h)+24px) 28px 40px;flex:1}
+.admin-si{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--white60);cursor:pointer;transition:all .15s}
+.admin-si:hover{color:var(--white);background:var(--white08)}
+.admin-si.active{color:var(--white);background:var(--white08)}
+
+.spinner{width:18px;height:18px;border:2px solid var(--border);
+  border-top-color:var(--white);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.dropdown{position:relative}
+.dd-menu{position:absolute;top:calc(100%+8px);right:0;background:var(--surface2);
+  border:1px solid var(--border);border-radius:var(--r);padding:6px;min-width:168px;
+  z-index:300;box-shadow:0 16px 48px rgba(0,0,0,.7);display:none}
+.dd-menu.open{display:block}
+.dd-item{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:8px;
+  font-size:13px;color:var(--white60);cursor:pointer;transition:all .15s}
+.dd-item:hover{background:var(--white08);color:var(--white)}
+.dd-item.danger{color:var(--red-light)}
+.dd-divider{border:none;border-top:1px solid var(--border);margin:4px 0}
+
+.empty-state{text-align:center;padding:56px 24px;color:var(--white35)}
+.error-msg{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--r);
+  padding:10px 14px;font-size:13px;color:var(--red-light);margin-top:10px;display:none}
+
+.loading-screen{position:fixed;inset:0;background:var(--black);z-index:1000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s}
+.loading-screen.hidden{opacity:0;pointer-events:none}
+.loading-logo{font-size:28px;font-weight:900;letter-spacing:-.04em}
+
+.notif-badge{position:absolute;top:-3px;right:-3px;width:15px;height:15px;
+  background:var(--red-light);border-radius:50%;font-size:9px;font-weight:700;
+  display:none;align-items:center;justify-content:center;border:2px solid var(--black)}
+.notif-badge.show{display:flex}
+
+/* PAYPAL CONTAINER */
+.paypal-container{margin-top:14px;min-height:50px}
+
+/* VIDEO EMBED */
+.embed-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:var(--r-lg)}
+.embed-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none;border-radius:var(--r-lg)}
+
+/* UPGRADE GATE */
+.upgrade-gate{background:linear-gradient(135deg,var(--blue-bg),var(--purple-bg));
+  border:1px solid var(--blue-border);border-radius:var(--r-xl);padding:36px;text-align:center}
+
+/* MESSAGE THREAD */
+.msg-bubble{padding:10px 14px;border-radius:12px;font-size:13px;max-width:75%;line-height:1.55}
+.msg-me{background:var(--white);color:var(--black);border-radius:12px 12px 4px 12px;margin-left:auto}
+.msg-them{background:var(--surface3);border-radius:12px 12px 12px 4px}
+
+/* SCOUTING AI */
+.ai-report{background:linear-gradient(135deg,#0d1117,#1a0d2e);border:1px solid var(--purple-border);
+  border-radius:var(--r-xl);padding:24px}
+
+@media(max-width:768px){
+  .nav-center{display:none}
+  .sidebar{display:none}
+  .bottom-nav{display:block}
+  .dash-main{margin-left:0;padding:calc(var(--nav-h)+16px) 14px 100px}
+  .g2,.g3{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .profile-cover{height:160px}
+  .profile-av-wrap{left:16px;bottom:-44px}
+  .av-120{width:96px;height:96px;font-size:34px}
+  .t-display{font-size:48px}
+  .hero{padding-top:calc(var(--nav-h)+40px)}
+  .admin-side{display:none}
+  .admin-main{margin-left:0;padding-top:calc(var(--nav-h)+16px)}
+  .modal-box{padding:20px}
+  .pricing-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .g-auto{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-logo">ELEVN</div>
+  <div class="spinner" style="width:22px;height:22px"></div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ═══════ MODALS ═══════ -->
+
+<!-- Edit Profile -->
+<div class="modal-backdrop" id="modalEditProfile" onclick="closeModalOnBg(event,'modalEditProfile')">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="t-h3">Modifier le profil</span>
+      <button class="modal-close" onclick="closeModal('modalEditProfile')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:13px">
+      <div style="text-align:center;margin-bottom:6px">
+        <div id="modalAvatar" class="av av-80" style="margin:0 auto 10px"></div>
+        <button class="btn btn-secondary btn-sm" onclick="triggerPhotoUpload()">Changer la photo</button>
+        <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="inp-group"><label class="inp-label">Prénom</label><input id="ep-first" class="inp" type="text"></div>
+        <div class="inp-group"><label class="inp-label">Nom</label><input id="ep-last" class="inp" type="text"></div>
+      </div>
+      <div class="inp-group"><label class="inp-label">Poste</label>
+        <select id="ep-pos" class="inp inp-select">
+          <option value="">Sélectionner un poste</option>
+          <option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Winger</option><option>Striker</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="inp-group"><label class="inp-label">Pays</label><input id="ep-country" class="inp" type="text" placeholder="France"></div>
+        <div class="inp-group"><label class="inp-label">Ville</label><input id="ep-city" class="inp" type="text" placeholder="Paris"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="inp-group"><label class="inp-label">Âge</label><input id="ep-age" class="inp" type="number" min="12" max="50"></div>
+        <div class="inp-group"><label class="inp-label">Taille (cm)</label><input id="ep-height" class="inp" type="number" min="140" max="220"></div>
+        <div class="inp-group"><label class="inp-label">Poids (kg)</label><input id="ep-weight" class="inp" type="number" min="40" max="120"></div>
+      </div>
+      <div class="inp-group"><label class="inp-label">Pied fort</label>
+        <select id="ep-foot" class="inp inp-select"><option>Droit</option><option>Gauche</option><option>Les deux</option></select>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:13px">
+        <div class="t-xs" style="margin-bottom:10px">Statistiques saison</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="inp-group"><label class="inp-label">Matchs joués</label><input id="ep-matches" class="inp" type="number" min="0"></div>
+          <div class="inp-group"><label class="inp-label">Buts</label><input id="ep-goals" class="inp" type="number" min="0"></div>
+          <div class="inp-group"><label class="inp-label">Passes décisives</label><input id="ep-assists" class="inp" type="number" min="0"></div>
+          <div class="inp-group"><label class="inp-label">Minutes jouées</label><input id="ep-mins" class="inp" type="number" min="0"></div>
+        </div>
+      </div>
+      <div class="inp-group"><label class="inp-label">Club actuel</label><input id="ep-club" class="inp" type="text" placeholder="FC Paris Academy"></div>
+      <div class="inp-group"><label class="inp-label">Bio (optionnel)</label>
+        <textarea id="ep-bio" class="inp" rows="3" placeholder="Parlez de vous aux scouts..." style="resize:vertical"></textarea>
+      </div>
+      <div id="ep-error" class="error-msg"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" id="epSaveBtn" onclick="saveProfile()">Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Video Modal -->
+<div class="modal-backdrop" id="modalUploadVideo" onclick="closeModalOnBg(event,'modalUploadVideo')">
+  <div class="modal-box" style="max-width:540px">
+    <div class="modal-hdr">
+      <span class="t-h3">Ajouter une vidéo</span>
+      <button class="modal-close" onclick="closeModal('modalUploadVideo')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:13px">
+      <div style="display:flex;gap:8px;margin-bottom:4px">
+        <button class="chip on" id="vsrc-youtube" onclick="setVideoSource('youtube')">▶ YouTube</button>
+        <button class="chip" id="vsrc-drive" onclick="setVideoSource('drive')">▲ Google Drive</button>
+      </div>
+      <div class="inp-group">
+        <label class="inp-label" id="vt-url-label">Lien YouTube *</label>
+        <input id="vt-url" class="inp" type="url" placeholder="https://youtube.com/watch?v=..." oninput="previewVideoInput(this.value)">
+        <div class="t-sm" id="vt-url-hint" style="margin-top:4px">Colle le lien YouTube complet</div>
+      </div>
+      <div id="vt-preview" style="display:none;border-radius:var(--r-lg);overflow:hidden;aspect-ratio:16/9">
+        <iframe id="vt-iframe" style="width:100%;height:100%;border:none" allowfullscreen allow="autoplay"></iframe>
+      </div>
+      <div class="inp-group"><label class="inp-label">Titre *</label><input id="vt-title" class="inp" type="text" placeholder="Highlights saison 2025..."></div>
+      <div class="inp-group"><label class="inp-label">Type</label>
+        <select id="vt-type" class="inp inp-select">
+          <option>Highlights</option><option>Match complet</option><option>Entraînement</option><option>Buts</option>
+        </select>
+      </div>
+      <div class="inp-group"><label class="inp-label">Description</label>
+        <textarea id="vt-desc" class="inp" rows="2" placeholder="Courte description..." style="resize:vertical"></textarea>
+      </div>
+      <div id="vt-error" class="error-msg"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" id="vtUploadBtn" onclick="uploadVideo()">Ajouter la vidéo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Player Detail Modal -->
+<div class="modal-backdrop" id="modalPlayer" onclick="closeModalOnBg(event,'modalPlayer')">
+  <div class="modal-box" style="max-width:580px">
+    <div class="modal-hdr">
+      <span class="t-h3">Profil joueur</span>
+      <button class="modal-close" onclick="closeModal('modalPlayer')">✕</button>
+    </div>
+    <div id="modalPlayerBody"></div>
+  </div>
+</div>
+
+<!-- Video Player Modal -->
+<div class="modal-backdrop" id="modalVideoPlayer" onclick="closeModalOnBg(event,'modalVideoPlayer')">
+  <div class="modal-box" style="max-width:700px">
+    <div class="modal-hdr">
+      <span class="t-h3" id="videoPlayerTitle"></span>
+      <button class="modal-close" onclick="closeModal('modalVideoPlayer');document.getElementById('videoPlayerEmbed').innerHTML=''">✕</button>
+    </div>
+    <div id="videoPlayerEmbed"></div>
+  </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="modal-backdrop" id="modalContact" onclick="closeModalOnBg(event,'modalContact')">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="t-h3" id="contactModalTitle">Contacter le joueur</span>
+      <button class="modal-close" onclick="closeModal('modalContact')">✕</button>
+    </div>
+    <div id="contactModalBody"></div>
+  </div>
+</div>
+
+<!-- Upgrade Modal -->
+<div class="modal-backdrop" id="modalUpgrade" onclick="closeModalOnBg(event,'modalUpgrade')">
+  <div class="modal-box" style="max-width:540px">
+    <div class="modal-hdr">
+      <span class="t-h3">🔒 Fonctionnalité Pro</span>
+      <button class="modal-close" onclick="closeModal('modalUpgrade')">✕</button>
+    </div>
+    <div id="upgradeModalBody"></div>
+  </div>
+</div>
+
+<!-- ═══════ PAGE: LANDING ═══════ -->
+<div id="page-landing" class="page active">
+  <nav class="nav">
+    <div class="nav-logo" onclick="goTo('landing')">ELEVN</div>
+    <div class="nav-center">
+      <span class="nav-link" onclick="scrollToSection('how-it-works')">Comment ça marche</span>
+      <span class="nav-link" onclick="scrollToSection('pricing-section')">Tarifs</span>
+      <span class="nav-link" onclick="scrollToSection('discover-section')">Découvrir</span>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-ghost btn-sm" onclick="goTo('login')">Connexion</button>
+      <button class="btn btn-primary btn-sm" onclick="goTo('register')">Rejoindre ELEVN</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;max-width:900px">
+      <div class="hero-badge"><div class="pulse"></div>Le passeport football mondial</div>
+      <h1 class="t-display">Every player<br>deserves a chance.</h1>
+      <p class="t-body" style="max-width:520px;margin-top:18px;font-size:17px">
+        Découvrez des talents. Construisez des clubs. Changez des carrières.<br>190 pays. Une seule plateforme mondiale.
+      </p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary btn-lg" onclick="goTo('register')">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+          Créer un profil gratuit
+        </button>
+        <button class="btn btn-secondary btn-lg" onclick="goTo('discover')">Découvrir les talents</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-wrap">
+    <div class="marquee">
+      <span class="marquee-tag">🇧🇷 Brazil</span><span class="marquee-tag">🇫🇷 France</span><span class="marquee-tag">🇦🇷 Argentina</span><span class="marquee-tag">🇩🇪 Germany</span><span class="marquee-tag">🇪🇸 Spain</span><span class="marquee-tag">🇳🇬 Nigeria</span><span class="marquee-tag">🇯🇵 Japan</span><span class="marquee-tag">🇺🇸 USA</span><span class="marquee-tag">🇬🇧 England</span><span class="marquee-tag">🇮🇹 Italy</span><span class="marquee-tag">🇵🇹 Portugal</span><span class="marquee-tag">🇲🇽 Mexico</span><span class="marquee-tag">🇸🇳 Senegal</span><span class="marquee-tag">🇰🇷 Korea</span><span class="marquee-tag">🇳🇱 Netherlands</span><span class="marquee-tag">🇲🇦 Morocco</span>
+      <span class="marquee-tag">🇧🇷 Brazil</span><span class="marquee-tag">🇫🇷 France</span><span class="marquee-tag">🇦🇷 Argentina</span><span class="marquee-tag">🇩🇪 Germany</span><span class="marquee-tag">🇪🇸 Spain</span><span class="marquee-tag">🇳🇬 Nigeria</span><span class="marquee-tag">🇯🇵 Japan</span><span class="marquee-tag">🇺🇸 USA</span><span class="marquee-tag">🇬🇧 England</span><span class="marquee-tag">🇮🇹 Italy</span><span class="marquee-tag">🇵🇹 Portugal</span><span class="marquee-tag">🇲🇽 Mexico</span><span class="marquee-tag">🇸🇳 Senegal</span><span class="marquee-tag">🇰🇷 Korea</span><span class="marquee-tag">🇳🇱 Netherlands</span><span class="marquee-tag">🇲🇦 Morocco</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <section style="max-width:1100px;margin:0 auto;padding:80px 20px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">
+      <div style="background:var(--black);padding:28px;text-align:center"><div style="font-size:36px;font-weight:900;letter-spacing:-.03em" id="statPlayers">—</div><div class="t-xs" style="margin-top:6px">Joueurs</div></div>
+      <div style="background:var(--black);padding:28px;text-align:center"><div style="font-size:36px;font-weight:900;letter-spacing:-.03em" id="statClubs">—</div><div class="t-xs" style="margin-top:6px">Clubs</div></div>
+      <div style="background:var(--black);padding:28px;text-align:center"><div style="font-size:36px;font-weight:900;letter-spacing:-.03em">190</div><div class="t-xs" style="margin-top:6px">Pays</div></div>
+      <div style="background:var(--black);padding:28px;text-align:center"><div style="font-size:36px;font-weight:900;letter-spacing:-.03em">Gratuit</div><div class="t-xs" style="margin-top:6px">Pour rejoindre</div></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works" style="max-width:1100px;margin:0 auto;padding:60px 20px 80px">
+    <div style="text-align:center;margin-bottom:52px">
+      <div class="t-xs" style="margin-bottom:10px">Comment ça marche</div>
+      <h2 class="t-h1">Conçu pour tous les niveaux.</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-cell">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg></div>
+        <div class="t-h4" style="margin-bottom:7px">Créez votre profil</div>
+        <p class="t-sm" style="line-height:1.65">Stats, vidéos YouTube/Drive, historique — votre CV football complet en un endroit.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg></div>
+        <div class="t-h4" style="margin-bottom:7px">Soyez découvert</div>
+        <p class="t-sm" style="line-height:1.65">Les scouts et clubs cherchent sur notre carte mondiale les joueurs correspondant à leurs critères.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <div class="t-h4" style="margin-bottom:7px">Clubs certifiés</div>
+        <p class="t-sm" style="line-height:1.65">Les clubs vérifient leurs stats via documents officiels. Zéro mensonge sur la plateforme.</p>
+      </div>
+      <div class="feature-cell">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></div>
+        <div class="t-h4" style="margin-bottom:7px">Suivez votre carrière</div>
+        <p class="t-sm" style="line-height:1.65">Classements en direct, badges et stats de carrière. Votre réputation grandit en temps réel.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing-section" style="max-width:1100px;margin:0 auto;padding:60px 20px 80px">
+    <div style="text-align:center;margin-bottom:52px">
+      <div class="t-xs" style="margin-bottom:10px">Abonnements</div>
+      <h2 class="t-h1">Investissez dans votre carrière.</h2>
+      <p class="t-body" style="max-width:480px;margin:14px auto 0">Le profil de base est gratuit. Les abonnements débloquent des outils professionnels.</p>
+    </div>
+    <div class="pricing-grid">
+      <!-- FREE -->
+      <div class="plan-card">
+        <div class="t-xs" style="color:var(--white60);margin-bottom:8px">GRATUIT</div>
+        <div class="t-h3">Starter</div>
+        <div class="plan-price"><sup>0</sup>€<sub>/mois</sub></div>
+        <p class="t-sm" style="margin-bottom:20px">Pour commencer et se faire connaître</p>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Profil public complet</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>3 vidéos YouTube/Drive</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Classement mondial</div>
+        <div class="plan-feature locked"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>Voir profils complets des joueurs</div>
+        <div class="plan-feature locked"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>Contacter des joueurs</div>
+        <div class="plan-feature locked"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>Analytics avancés</div>
+        <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:24px" onclick="goTo('register')">Commencer gratuitement</button>
+      </div>
+      <!-- PRO -->
+      <div class="plan-card featured" style="border-color:var(--blue-border)">
+        <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%)">
+          <span class="badge badge-blue">⭐ Plus populaire</span>
+        </div>
+        <div class="t-xs" style="color:var(--blue-light);margin-bottom:8px">PRO</div>
+        <div class="t-h3">Scout Pro</div>
+        <div class="plan-price"><sup>90</sup>€<sub>/mois</sub></div>
+        <p class="t-sm" style="margin-bottom:20px">Pour les joueurs sérieux et les recruteurs</p>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Tout de Starter</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Vidéos illimitées</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><strong>Voir profils complets</strong></div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg><strong>Contacter les joueurs</strong></div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Badge Pro visible</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Priorité dans les recherches</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Analytics de profil</div>
+        <button class="btn btn-blue" style="width:100%;justify-content:center;margin-top:24px" onclick="goTo('register')">Passer Pro — 90€/mois</button>
+      </div>
+      <!-- CLUB -->
+      <div class="plan-card">
+        <div class="t-xs" style="color:var(--gold-light);margin-bottom:8px">CLUB</div>
+        <div class="t-h3">Club Academy</div>
+        <div class="plan-price"><sup>500</sup>€<sub>/mois</sub></div>
+        <p class="t-sm" style="margin-bottom:20px">Pour les académies et clubs professionnels</p>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Tout de Pro</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Certification officielle du club</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Page club dédiée</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Gérer jusqu'à 50 joueurs</div>
+        <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Dashboard recrutement</div>
+        <button class="btn btn-secondary" style="width:100%;justify-content:center;margin-top:24px;border-color:var(--gold-border)" onclick="goTo('register')">Créer votre club — 500€/mois</button>
+      </div>
+    </div>
+    <!-- ELITE -->
+    <div style="margin-top:16px;background:linear-gradient(135deg,#1a0d2e,#0d1b2a);border:1px solid var(--purple-border);border-radius:var(--r-xl);padding:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+      <div>
+        <div class="t-xs" style="color:var(--purple);margin-bottom:8px">ÉLITE — 1 000€/MOIS</div>
+        <div class="t-h3" style="margin-bottom:6px">Federation & Agency</div>
+        <p class="t-sm">Pour les fédérations, agences. Outils de scouting IA, rapports personnalisés, accès illimité.</p>
+      </div>
+      <button class="btn btn-secondary" style="border-color:var(--purple-border);color:var(--purple);flex-shrink:0" onclick="goTo('register')">Nous contacter — 1 000€/mois</button>
+    </div>
+  </section>
+
+  <!-- FEATURED PLAYERS -->
+  <section id="discover-section" style="max-width:1100px;margin:0 auto;padding:60px 20px 80px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:14px">
+      <div><div class="t-xs" style="margin-bottom:10px">Talents en vedette</div><h2 class="t-h1">Rising stars.</h2></div>
+      <button class="btn btn-secondary" onclick="goTo('discover')">Voir tous les joueurs</button>
+    </div>
+    <div class="g-auto" id="landingPlayerGrid"><div class="empty-state">Chargement...</div></div>
+  </section>
+
+  <!-- CTA -->
+  <section style="max-width:1100px;margin:0 auto;padding:0 20px 100px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:72px 36px;text-align:center">
+      <h2 class="t-h1" style="margin-bottom:14px">Votre prochain move commence ici.</h2>
+      <p class="t-body" style="font-size:16px;max-width:480px;margin:0 auto 36px">Rejoignez des milliers de joueurs déjà découverts par des scouts et clubs du monde entier.</p>
+      <button class="btn btn-primary btn-lg" onclick="goTo('register')">Créer votre profil — c'est gratuit</button>
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid var(--border);padding:40px 20px">
+    <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+      <div><div style="font-size:17px;font-weight:900;letter-spacing:-.04em;margin-bottom:5px">ELEVN</div><div class="t-sm">Every player deserves a chance.</div></div>
+      <div style="display:flex;gap:20px"><a class="t-sm" href="#">Confidentialité</a><a class="t-sm" href="#">CGU</a><a class="t-sm" href="#">Contact</a></div>
+      <div class="t-sm">© 2025 ELEVN</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════ PAGE: LOGIN ═══════ -->
+<div id="page-login" class="page">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo" onclick="goTo('landing')">ELEVN</div>
+      <div class="t-h3" style="margin-bottom:4px">Bienvenue</div>
+      <p class="t-sm" style="margin-bottom:22px">Connectez-vous à votre compte</p>
+      <button class="google-btn" onclick="signInGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continuer avec Google
+      </button>
+      <div class="auth-divider"><div class="auth-divider-line"></div><span class="auth-divider-label">ou</span><div class="auth-divider-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="inp-group"><label class="inp-label">Email</label><input id="loginEmail" class="inp" type="email" placeholder="vous@email.com" onkeydown="if(event.key==='Enter')signInEmail()"></div>
+        <div class="inp-group"><label class="inp-label">Mot de passe</label><input id="loginPass" class="inp" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')signInEmail()"></div>
+        <div id="loginError" class="error-msg"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:2px" id="loginBtn" onclick="signInEmail()">Se connecter</button>
+      </div>
+      <p style="text-align:center;margin-top:20px;font-size:13px;color:var(--white35)">
+        Pas de compte ? <span style="color:var(--white60);cursor:pointer;font-weight:500" onclick="goTo('register')">S'inscrire</span>
+      </p>
+      <p style="text-align:center;margin-top:10px"><span class="t-sm" style="cursor:pointer" onclick="goTo('landing')">← Retour à l'accueil</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ PAGE: REGISTER ═══════ -->
+<div id="page-register" class="page">
+  <div class="auth-wrap" style="padding-top:80px">
+    <div class="auth-card" style="max-width:480px">
+      <div class="auth-logo" onclick="goTo('landing')">ELEVN</div>
+      <div class="t-h3" style="margin-bottom:4px">Créer votre compte</div>
+      <p class="t-sm" style="margin-bottom:22px">Rejoignez la communauté football mondiale — gratuit pour toujours</p>
+      <button class="google-btn" onclick="signInGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continuer avec Google
+      </button>
+      <div class="auth-divider"><div class="auth-divider-line"></div><span class="auth-divider-label">ou</span><div class="auth-divider-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="inp-group"><label class="inp-label">Prénom</label><input id="regFirst" class="inp" type="text" placeholder="Marcus"></div>
+          <div class="inp-group"><label class="inp-label">Nom</label><input id="regLast" class="inp" type="text" placeholder="Johnson"></div>
+        </div>
+        <div class="inp-group"><label class="inp-label">Email</label><input id="regEmail" class="inp" type="email" placeholder="marcus@email.com"></div>
+        <div class="inp-group"><label class="inp-label">Mot de passe</label><input id="regPass" class="inp" type="password" placeholder="Min 8 caractères"></div>
+        <div class="inp-group"><label class="inp-label">Je suis un(e)...</label>
+          <select id="regRole" class="inp inp-select">
+            <option value="player">Joueur</option>
+            <option value="club">Club / Académie</option>
+            <option value="recruiter">Scout / Recruteur</option>
+          </select>
+        </div>
+        <div id="regError" class="error-msg"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:2px" id="regBtn" onclick="registerEmail()">Créer mon compte — gratuit</button>
+        <p class="t-sm" style="text-align:center;line-height:1.7">En créant un compte, vous acceptez nos CGU et Politique de confidentialité.</p>
+      </div>
+      <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--white35)">
+        Déjà sur ELEVN ? <span style="color:var(--white60);cursor:pointer;font-weight:500" onclick="goTo('login')">Se connecter</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ PAGE: DASHBOARD ═══════ -->
+<div id="page-dashboard" class="page">
+  <nav class="nav">
+    <div class="nav-logo" onclick="goTo('landing')">ELEVN</div>
+    <div class="nav-center">
+      <span class="nav-link" onclick="showTab('home')">Accueil</span>
+      <span class="nav-link" onclick="goTo('discover')">Découvrir</span>
+      <span class="nav-link" onclick="showTab('rankings')">Classements</span>
+    </div>
+    <div class="nav-right">
+      <div style="position:relative;cursor:pointer" onclick="showTab('notifications')">
+        <button class="btn-icon btn-ghost">
+          <svg width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+        </button>
+        <div class="notif-badge" id="navNotifBadge">0</div>
+      </div>
+      <div class="dropdown">
+        <div id="navAvatar" class="av av-32" style="cursor:pointer;background:var(--surface3)" onclick="toggleDD('navMenu')"></div>
+        <div class="dd-menu" id="navMenu">
+          <div class="dd-item" onclick="closeDD('navMenu');showTab('profile')">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
+            Mon profil
+          </div>
+          <div class="dd-item" onclick="closeDD('navMenu');showTab('subscription')">⭐ Abonnement</div>
+          <div class="dd-item" onclick="closeDD('navMenu');showTab('messages')">✉️ Messages</div>
+          <div class="dd-item" onclick="closeDD('navMenu');showTab('settings')">⚙ Paramètres</div>
+          <hr class="dd-divider">
+          <div class="dd-item danger" onclick="signOut()">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+            Déconnexion
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <aside class="sidebar">
+    <div class="sidebar-body">
+      <div class="sidebar-section">Principal</div>
+      <div class="sb-item active" id="sb-home" onclick="showTab('home')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>
+        Accueil
+      </div>
+      <div class="sb-item" id="sb-profile" onclick="showTab('profile')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
+        Mon profil
+      </div>
+      <div class="sb-item" id="sb-videos" onclick="showTab('videos')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
+        Vidéos
+      </div>
+      <div class="sb-item" id="sb-messages" onclick="showTab('messages')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+        Messages
+        <span class="sb-badge" id="sbMsgCount" style="display:none"></span>
+      </div>
+      <div class="sb-item" id="sb-certification" onclick="showTab('certification')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+        Certification
+      </div>
+      <div class="sidebar-section">Explorer</div>
+      <div class="sb-item" id="sb-discover" onclick="goTo('discover')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        Découvrir
+      </div>
+      <div class="sb-item" id="sb-rankings" onclick="showTab('rankings')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+        Classements
+      </div>
+      <div class="sidebar-section">Compte</div>
+      <div class="sb-item" id="sb-subscription" onclick="showTab('subscription')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>
+        Abonnement
+      </div>
+      <div class="sb-item" id="sb-notifications" onclick="showTab('notifications')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+        Notifications
+        <span class="sb-badge" id="sbNotifCount" style="display:none"></span>
+      </div>
+      <div class="sb-item" id="sb-settings" onclick="showTab('settings')">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Paramètres
+      </div>
+    </div>
+  </aside>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="bn-items">
+      <div class="bn-item active" id="bn-home" onclick="showTab('home')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg><span class="bn-label">Accueil</span></div>
+      <div class="bn-item" id="bn-discover" onclick="goTo('discover')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg><span class="bn-label">Découvrir</span></div>
+      <div class="bn-item" id="bn-messages" onclick="showTab('messages')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg><span class="bn-label">Messages</span></div>
+      <div class="bn-item" id="bn-profile" onclick="showTab('profile')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg><span class="bn-label">Profil</span></div>
+    </div>
+  </div>
+
+  <!-- DASH CONTENT -->
+  <div class="dash-wrap">
+    <div class="dash-main">
+
+      <!-- HOME -->
+      <div class="tab-content active" id="dash-home">
+        <div class="dash-title" id="homeGreeting">Bonjour 👋</div>
+        <div class="dash-sub">Voici ce qui se passe sur ELEVN</div>
+        <div id="homePlanBanner" style="margin-bottom:22px"></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-lbl">Vues profil (7j)</div><div class="stat-val" id="homeViews">—</div></div>
+          <div class="stat-card"><div class="stat-lbl">Messages reçus</div><div class="stat-val" id="homeRequests">—</div></div>
+          <div class="stat-card"><div class="stat-lbl">Classement mondial</div><div class="stat-val" id="homeRank">—</div></div>
+          <div class="stat-card"><div class="stat-lbl">Vidéos</div><div class="stat-val" id="homeVideos">—</div></div>
+        </div>
+        <div class="card" style="margin-bottom:22px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div><div class="t-h4">Complétion du profil</div><div class="t-sm" style="margin-top:2px">Un profil complet est découvert 3× plus vite</div></div>
+            <div style="font-size:22px;font-weight:800;color:var(--green-light)" id="homeCompletion">0%</div>
+          </div>
+          <div class="progress"><div class="progress-fill" id="homeCompletionBar" style="width:0%;background:var(--green-light)"></div></div>
+          <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-sm" onclick="openModal('modalEditProfile');loadProfileIntoForm()">Compléter le profil</button>
+            <button class="btn btn-secondary btn-sm" onclick="showTab('videos');checkVideoLimit()">+ Ajouter une vidéo</button>
+          </div>
+        </div>
+        <div class="g2">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div class="t-h4">Activité récente</div>
+              <button class="btn btn-ghost btn-sm" onclick="showTab('notifications')">Tout voir</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="homeActivity"><div class="t-sm">Aucune activité</div></div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div class="t-h4">Top joueurs</div>
+              <button class="btn btn-ghost btn-sm" onclick="showTab('rankings')">Classements</button>
+            </div>
+            <div id="homeTopPlayers"><div class="t-sm">Chargement...</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="tab-content" id="dash-profile">
+        <div style="margin:-28px -28px 0;background:var(--surface);border-bottom:1px solid var(--border)">
+          <div class="profile-cover">
+            <div class="profile-pattern"></div>
+            <div class="profile-av-wrap"><div class="av av-120" id="profileAvatar"></div></div>
+            <div style="position:absolute;top:14px;right:20px;display:flex;gap:8px">
+              <button class="btn btn-secondary btn-sm" onclick="openModal('modalEditProfile');loadProfileIntoForm()">Modifier</button>
+            </div>
+          </div>
+          <div style="padding:64px 28px 28px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px">
+              <div>
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:5px">
+                  <span class="t-h2" id="profileName">—</span>
+                  <span id="profilePlanBadge"></span>
+                  <span class="badge badge-green" id="profileVerifiedBadge" style="display:none">✓ Vérifié</span>
+                  <span class="badge badge-green" id="profileClubCertBadge" style="display:none">🏟 Club Certifié</span>
+                </div>
+                <div style="color:var(--white60);font-size:14px;margin-bottom:12px" id="profilePos">—</div>
+                <div style="display:flex;gap:16px;flex-wrap:wrap">
+                  <span class="t-sm" id="profileLocation"></span>
+                  <span class="t-sm" id="profileAge"></span>
+                  <span class="t-sm" id="profileClub"></span>
+                </div>
+              </div>
+              <div style="display:flex;gap:20px;align-items:center">
+                <div style="text-align:center"><div style="font-size:22px;font-weight:800" id="profileWorldRank">—</div><div class="t-xs">Mondial</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="g2" style="margin-top:28px">
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="card">
+              <div class="t-h4" style="margin-bottom:14px">Statistiques saison</div>
+              <div class="g2" style="gap:10px">
+                <div class="pc-stat"><div class="pc-stat-val" id="pMatches">—</div><div class="pc-stat-lbl">Matchs</div></div>
+                <div class="pc-stat"><div class="pc-stat-val" id="pGoals">—</div><div class="pc-stat-lbl">Buts</div></div>
+                <div class="pc-stat"><div class="pc-stat-val" id="pAssists">—</div><div class="pc-stat-lbl">Passes D.</div></div>
+                <div class="pc-stat"><div class="pc-stat-val" id="pMins">—</div><div class="pc-stat-lbl">Minutes</div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="t-h4" style="margin-bottom:14px">Profil physique</div>
+              <div class="g2" style="gap:12px">
+                <div><div class="t-xs" style="margin-bottom:3px">Taille</div><div style="font-size:15px;font-weight:600" id="pHeight">—</div></div>
+                <div><div class="t-xs" style="margin-bottom:3px">Poids</div><div style="font-size:15px;font-weight:600" id="pWeight">—</div></div>
+                <div><div class="t-xs" style="margin-bottom:3px">Pied fort</div><div style="font-size:15px;font-weight:600" id="pFoot">—</div></div>
+                <div><div class="t-xs" style="margin-bottom:3px">Nationalité</div><div style="font-size:15px;font-weight:600" id="pNationality">—</div></div>
+              </div>
+            </div>
+            <div class="card" id="profileBioCard" style="display:none">
+              <div class="t-h4" style="margin-bottom:10px">À propos</div>
+              <p class="t-body" id="profileBio" style="font-size:14px"></p>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="card"><div class="t-h4" style="margin-bottom:14px">Badges</div><div style="display:flex;flex-direction:column;gap:9px" id="profileBadges"></div></div>
+            <div class="card">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div class="t-h4">Mes vidéos</div>
+                <button class="btn btn-ghost btn-sm" onclick="showTab('videos')">Tout voir</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px" id="profileVideosPreview"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEOS -->
+      <div class="tab-content" id="dash-videos">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div class="dash-title">Vidéos</div>
+          <button class="btn btn-primary btn-sm" onclick="checkVideoLimit()">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Ajouter
+          </button>
+        </div>
+        <div class="dash-sub">Vos highlights YouTube / Google Drive</div>
+        <div class="g-auto" id="videosGrid"><div class="empty-state">Aucune vidéo.</div></div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="tab-content" id="dash-messages">
+        <div class="dash-title">Messages</div>
+        <div class="dash-sub" id="msgSubTitle">Vos conversations avec les joueurs et recruteurs</div>
+        <div id="messagesContent">Chargement...</div>
+      </div>
+
+      <!-- RANKINGS -->
+      <div class="tab-content" id="dash-rankings">
+        <div class="dash-title">Classements</div>
+        <div class="dash-sub">Mis à jour en temps réel selon les performances</div>
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+          <select class="inp inp-select" style="max-width:150px;padding:9px 32px 9px 12px" id="rankCountryFilter" onchange="loadRankings()">
+            <option value="">Monde</option>
+            <option>France</option><option>Brazil</option><option>England</option><option>Spain</option><option>Nigeria</option><option>Argentina</option><option>Germany</option>
+          </select>
+          <select class="inp inp-select" style="max-width:150px;padding:9px 32px 9px 12px" id="rankPosFilter" onchange="loadRankings()">
+            <option value="">Tous les postes</option>
+            <option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Winger</option><option>Striker</option>
+          </select>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden" id="rankingsList"><div class="empty-state">Chargement...</div></div>
+      </div>
+
+      <!-- CERTIFICATION -->
+      <div class="tab-content" id="dash-certification">
+        <div class="dash-title">Certification</div>
+        <div class="dash-sub">Prouvez l'authenticité de vos statistiques et de votre club</div>
+        <div style="max-width:620px" id="certContent">Chargement...</div>
+      </div>
+
+      <!-- SUBSCRIPTION -->
+      <div class="tab-content" id="dash-subscription">
+        <div class="dash-title">Abonnement</div>
+        <div class="dash-sub">Gérez votre plan ELEVN — paiement sécurisé via PayPal</div>
+        <div id="subContent">Chargement...</div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="tab-content" id="dash-notifications">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div class="dash-title">Notifications</div>
+          <button class="btn btn-ghost btn-sm" onclick="markAllNotifsRead()">Tout marquer lu</button>
+        </div>
+        <div class="dash-sub" id="notifSubtitle">—</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="notifList"><div class="empty-state">Aucune notification.</div></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="tab-content" id="dash-settings">
+        <div class="dash-title">Paramètres</div>
+        <div class="dash-sub">Gérez votre compte</div>
+        <div style="max-width:560px;display:flex;flex-direction:column;gap:20px">
+          <div class="card">
+            <div class="t-h4" style="margin-bottom:18px">Compte</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div class="inp-group"><label class="inp-label">Nom d'affichage</label><input id="settingsName" class="inp" type="text"></div>
+              <div class="inp-group"><label class="inp-label">Email</label><input class="inp" type="email" id="settingsEmail" disabled style="opacity:.45"></div>
+              <button class="btn btn-secondary btn-sm" style="width:fit-content" onclick="saveDisplayName()">Sauvegarder</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="t-h4" style="margin-bottom:4px;color:var(--red-light)">Zone de danger</div>
+            <div class="t-sm" style="margin-bottom:14px">Ces actions sont irréversibles.</div>
+            <button class="btn btn-danger btn-sm" onclick="if(confirm('Supprimer votre compte ELEVN définitivement ?'))deleteAccount()">Supprimer le compte</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ PAGE: DISCOVER ═══════ -->
+<div id="page-discover" class="page">
+  <nav class="nav">
+    <div class="nav-logo" onclick="goTo(A.user ? 'dashboard' : 'landing')">ELEVN</div>
+    <div class="nav-center"><span class="nav-link" onclick="goTo(A.user ? 'dashboard' : 'landing')">← Retour</span></div>
+    <div class="nav-right">
+      <button class="btn btn-primary btn-sm" onclick="A.user ? goTo('dashboard') : goTo('register')">
+        <span id="discoverNavCta">Rejoindre ELEVN</span>
+      </button>
+    </div>
+  </nav>
+  <div style="padding:calc(var(--nav-h)+28px) 24px 60px;max-width:1200px;margin:0 auto">
+    <div class="t-h1" style="margin-bottom:6px">Découvrir les Talents</div>
+    <p class="t-body" style="margin-bottom:28px">Cherchez des joueurs de 190 pays. <span id="discoverPlanNote" style="color:var(--blue-light)"></span></p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="inp-search-wrap" style="flex:1;min-width:200px">
+        <div class="inp-search-icon"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg></div>
+        <input type="text" class="inp inp-search" id="discSearch" placeholder="Rechercher par nom..." oninput="applyDiscoverFilters()">
+      </div>
+      <select class="inp inp-select" style="max-width:140px;padding:9px 32px 9px 12px" id="discPosFilter" onchange="applyDiscoverFilters()">
+        <option value="">Tous les postes</option>
+        <option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Winger</option><option>Striker</option>
+      </select>
+      <select class="inp inp-select" style="max-width:140px;padding:9px 32px 9px 12px" id="discCountryFilter" onchange="applyDiscoverFilters()">
+        <option value="">Tous les pays</option>
+        <option>France</option><option>Brazil</option><option>England</option><option>Spain</option><option>Nigeria</option><option>Argentina</option><option>Germany</option><option>Japan</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:22px" id="discChips">
+      <button class="chip on" data-age="" onclick="selectChip(this,'age')">Tous les âges</button>
+      <button class="chip" data-age="u18" onclick="selectChip(this,'age')">U18</button>
+      <button class="chip" data-age="u21" onclick="selectChip(this,'age')">U21</button>
+      <button class="chip" data-age="u25" onclick="selectChip(this,'age')">U25</button>
+      <button class="chip" data-age="senior" onclick="selectChip(this,'age')">Senior 25+</button>
+    </div>
+    <div class="t-sm" id="discCount" style="margin-bottom:14px">Chargement...</div>
+    <div id="discContent" class="g-auto"></div>
+  </div>
+</div>
+
+<!-- ═══════ PAGE: ADMIN ═══════ -->
+<div id="page-admin" class="page">
+  <nav class="nav">
+    <div class="nav-logo">ELEVN <span class="badge badge-red" style="margin-left:8px;font-size:10px">ADMIN</span></div>
+    <div class="nav-right">
+      <button class="btn btn-ghost btn-sm" onclick="goTo('dashboard')">← App</button>
+      <button class="btn btn-danger btn-sm" onclick="signOut()">Déconnexion</button>
+    </div>
+  </nav>
+  <div class="admin-wrap">
+    <div class="admin-side">
+      <div class="admin-si active" onclick="adminTab('overview',this)">Vue d'ensemble</div>
+      <div class="admin-si" onclick="adminTab('users',this)">Utilisateurs</div>
+      <div class="admin-si" onclick="adminTab('certifications',this)">Certifications</div>
+      <div class="admin-si" onclick="adminTab('subscriptions',this)">Abonnements</div>
+      <div class="admin-si" onclick="adminTab('videos-admin',this)">Vidéos</div>
+      <div class="admin-si" onclick="adminTab('messages-admin',this)">Messages</div>
+    </div>
+    <div class="admin-main" id="adminContent">Chargement...</div>
+  </div>
+</div>
+
+<script>
+/* ═══ FIREBASE ═══ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDqvSzyFHHDaABtw9xANJ6AmMdrN9Zr9pc",
+  authDomain: "elevn-62a0a.firebaseapp.com",
+  projectId: "elevn-62a0a",
+  storageBucket: "elevn-62a0a.firebasestorage.app",
+  messagingSenderId: "251725168775",
+  appId: "1:251725168775:web:fd017208b54c4c61753822",
+  measurementId: "G-9LKP4WTT92",
+  databaseURL: "https://elevn-62a0a-default-rtdb.europe-west1.firebasedatabase.app"
+};
+firebase.initializeApp(firebaseConfig);
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+try { firebase.analytics(); } catch(e) {}
+const auth = firebase.auth();
+const db = firebase.database();
+
+/* ═══ PAYPAL CONFIG ═══ */
+// Plan IDs PayPal (à remplacer par vos vrais Plan IDs depuis le dashboard PayPal)
+// Pour tester : créer des plans sur https://developer.paypal.com
+const PAYPAL_PLANS = {
+  pro:   'P-PRO_PLAN_ID_HERE',   // 90€/mois
+  club:  'P-CLUB_PLAN_ID_HERE',  // 500€/mois
+  elite: 'P-ELITE_PLAN_ID_HERE'  // 1000€/mois
+};
+// Mode démo (true = simulation sans PayPal réel)
+const PAYPAL_DEMO_MODE = true;
+
+/* ═══ APP STATE ═══ */
+const A = {
+  user: null, profile: null, currentPage: 'landing', currentTab: 'home',
+  discoverPlayers: [], ageFilter: '', notifCount: 0, videoSource: 'youtube',
+  paypalLoaded: false
+};
+
+/* ═══ PLANS — accès et avantages ═══ */
+const PLANS = {
+  free:  { name:'Starter',     price:0,    videoLimit:3,   canViewFullProfile:false, canContact:false, canScoutAI:false, badge:null },
+  pro:   { name:'Scout Pro',   price:90,   videoLimit:999, canViewFullProfile:true,  canContact:true,  canScoutAI:false, badge:'pro' },
+  club:  { name:'Club Academy',price:500,  videoLimit:999, canViewFullProfile:true,  canContact:true,  canScoutAI:false, badge:'club' },
+  elite: { name:'Federation',  price:1000, videoLimit:999, canViewFullProfile:true,  canContact:true,  canScoutAI:true,  badge:'elite' }
+};
+
+function getPlan() { return A.profile?.plan || 'free'; }
+function getPlanObj() { return PLANS[getPlan()] || PLANS.free; }
+function canDo(feature) { return getPlanObj()[feature] === true; }
+
+/* ═══ AUTH STATE ═══ */
+auth.onAuthStateChanged(async user => {
+  const loading = document.getElementById('loadingScreen');
+  if (user) {
+    A.user = user;
+    await ensureUserRecord(user);
+    await loadMyProfile();
+    updateNavAvatar();
+    loadNotifCount();
+    subscribeNotifs();
+    subscribeMessages();
+    const cta = document.getElementById('discoverNavCta');
+    if (cta) cta.textContent = 'Dashboard';
+    // Update discover plan note
+    const discNote = document.getElementById('discoverPlanNote');
+    if (discNote) discNote.textContent = canDo('canViewFullProfile') ? '✓ Vous pouvez voir les profils complets et contacter les joueurs.' : '🔒 Abonnez-vous Pro pour voir les profils complets et contacter les joueurs.';
+    loadLandingStats();
+    loadLandingPlayers();
+    // Auto-redirect if on login/register
+    if (['login','register'].includes(A.currentPage)) goTo('dashboard');
+  } else {
+    A.user = null; A.profile = null;
+    loadLandingStats(); loadLandingPlayers();
+  }
+  loading.classList.add('hidden');
+  if (!user && ['dashboard','admin'].includes(A.currentPage)) goTo('login');
+});
+
+/* ═══ DATABASE HELPERS ═══ */
+async function ensureUserRecord(user) {
+  const ref = db.ref(`users/${user.uid}`);
+  const snap = await ref.once('value');
+  if (!snap.exists()) {
+    const displayName = user.displayName || '';
+    const parts = displayName.split(' ');
+    const first = parts[0] || '';
+    const last = parts.slice(1).join(' ');
+    await ref.set({
+      uid:user.uid, email:user.email,
+      displayName:displayName||user.email.split('@')[0],
+      firstName:first, lastName:last,
+      role:'player', createdAt:Date.now(),
+      verified:false, public:true,
+      plan:'free', planActiveSince:null, paypalSubscriptionId:null
+    });
+    await db.ref(`players/${user.uid}`).set({
+      uid:user.uid, name:displayName||user.email.split('@')[0],
+      firstName:first, lastName:last,
+      position:'', country:'', city:'', age:0, height:0, weight:0,
+      foot:'Droit', club:'', bio:'', matches:0, goals:0, assists:0,
+      minutesPlayed:0, profileViews:0, rating:50, verified:false,
+      photoURL:user.photoURL||'', createdAt:Date.now(),
+      plan:'free', certificationStatus:'none'
+    });
+    await pushNotif(user.uid, {type:'welcome',icon:'👋',text:'Bienvenue sur ELEVN ! Complétez votre profil pour être découvert.',read:false,ts:Date.now()});
+  }
+}
+
+async function loadMyProfile() {
+  if (!A.user) return;
+  const snap = await db.ref(`players/${A.user.uid}`).once('value');
+  A.profile = snap.val();
+  renderProfilePage();
+  renderHomeStats();
+  loadProfileVideosPreview();
+}
+
+async function pushNotif(uid, obj) {
+  await db.ref(`notifications/${uid}`).push(obj);
+}
+
+function subscribeNotifs() {
+  if (!A.user) return;
+  db.ref(`notifications/${A.user.uid}`).on('value', snap => {
+    const notifs = [];
+    snap.forEach(c => notifs.push({id:c.key,...c.val()}));
+    notifs.sort((a,b)=>b.ts-a.ts);
+    A.notifCount = notifs.filter(n=>!n.read).length;
+    updateNotifBadge();
+    renderNotifList(notifs);
+    const actEl = document.getElementById('homeActivity');
+    if (actEl) {
+      const recent = notifs.slice(0,3);
+      if (!recent.length) { actEl.innerHTML = '<div class="t-sm">Aucune activité</div>'; return; }
+      actEl.innerHTML = recent.map(n=>`
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:var(--r);border:1px solid var(--border)">
+          <span style="font-size:20px;line-height:1">${esc(n.icon||'📌')}</span>
+          <div><div style="font-size:13px">${esc(n.text)}</div><div class="t-sm" style="margin-top:2px">${timeAgo(n.ts)}</div></div>
+        </div>`).join('');
+    }
+  });
+}
+
+function subscribeMessages() {
+  if (!A.user) return;
+  db.ref(`messages/${A.user.uid}`).on('value', snap => {
+    let unread = 0;
+    snap.forEach(thread => {
+      thread.forEach(msg => { if (!msg.val().read && msg.val().toUid === A.user.uid) unread++; });
+    });
+    const sbBadge = document.getElementById('sbMsgCount');
+    if (sbBadge) { sbBadge.textContent = unread; sbBadge.style.display = unread>0?'inline-flex':'none'; }
+    setText('homeRequests', snap.numChildren());
+  });
+}
+
+function loadNotifCount() {
+  if (!A.user) return;
+  db.ref(`notifications/${A.user.uid}`).orderByChild('read').equalTo(false).once('value', snap => {
+    A.notifCount = snap.numChildren(); updateNotifBadge();
+  });
+}
+
+/* ═══ AUTH ACTIONS ═══ */
+async function signInEmail() {
+  const btn = document.getElementById('loginBtn');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  if (!email || !pass) { showErr(errEl,'Veuillez remplir tous les champs.'); return; }
+  setBtnLoading(btn,true);
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+    toast('Bienvenue ! 👋','success');
+    goTo('dashboard');
+  } catch(e) { showErr(errEl, friendlyAuthError(e.code)); }
+  finally { setBtnLoading(btn,false); }
+}
+
+async function registerEmail() {
+  const btn = document.getElementById('regBtn');
+  const first = document.getElementById('regFirst').value.trim();
+  const last = document.getElementById('regLast').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const role = document.getElementById('regRole').value;
+  const errEl = document.getElementById('regError');
+  errEl.style.display = 'none';
+  if (!first||!last||!email||!pass) { showErr(errEl,'Veuillez remplir tous les champs.'); return; }
+  if (pass.length < 8) { showErr(errEl,'Le mot de passe doit contenir au moins 8 caractères.'); return; }
+  setBtnLoading(btn,true);
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({displayName:`${first} ${last}`});
+    await db.ref(`users/${cred.user.uid}/role`).set(role);
+    await db.ref(`users/${cred.user.uid}/firstName`).set(first);
+    await db.ref(`users/${cred.user.uid}/lastName`).set(last);
+    await db.ref(`players/${cred.user.uid}/name`).set(`${first} ${last}`);
+    await db.ref(`players/${cred.user.uid}/firstName`).set(first);
+    await db.ref(`players/${cred.user.uid}/lastName`).set(last);
+    toast('Bienvenue sur ELEVN ! 🎉','success');
+    goTo('dashboard');
+  } catch(e) { showErr(errEl, friendlyAuthError(e.code)); }
+  finally { setBtnLoading(btn,false); }
+}
+
+async function signInGoogle() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
+    toast('Connecté avec Google ! 👋','success');
+    goTo('dashboard');
+  } catch(e) { toast('Erreur Google: '+e.message,'error'); }
+}
+
+async function signOut() {
+  await auth.signOut();
+  A.user = null; A.profile = null;
+  toast('Déconnecté.','info');
+  goTo('landing');
+}
+
+async function deleteAccount() {
+  if (!A.user) return;
+  try {
+    await db.ref(`players/${A.user.uid}`).remove();
+    await db.ref(`users/${A.user.uid}`).remove();
+    await db.ref(`videos/${A.user.uid}`).remove();
+    await db.ref(`notifications/${A.user.uid}`).remove();
+    await db.ref(`messages/${A.user.uid}`).remove();
+    await A.user.delete();
+    toast('Compte supprimé.','info'); goTo('landing');
+  } catch(e) { toast('Erreur: '+e.message,'error'); }
+}
+
+/* ═══════════════════════════════════════
+   SUBSCRIPTION & PAYPAL
+═══════════════════════════════════════ */
+function renderSubscriptionTab() {
+  const el = document.getElementById('subContent');
+  if (!el) return;
+  const plan = getPlan();
+  const planObj = getPlanObj();
+
+  const planBadgeHTML = {
+    free: `<span class="plan-badge-starter">Starter</span>`,
+    pro:  `<span class="plan-badge-pro">⭐ Scout Pro</span>`,
+    club: `<span class="plan-badge-club">🏟 Club Academy</span>`,
+    elite:`<span class="plan-badge-elite">👑 Federation</span>`
+  }[plan] || '';
+
+  const featuresHTML = {
+    free: ['Profil public complet','3 vidéos YouTube/Drive','Classement mondial'],
+    pro:  ['Tout de Starter','Vidéos illimitées','Voir profils complets des joueurs','Contacter les joueurs directement','Badge Pro visible aux scouts','Apparaître en premier','Analytics de profil'],
+    club: ['Tout de Pro','Certification officielle du club','Page club dédiée','Gérer jusqu\'à 50 joueurs','Dashboard recrutement','Stats vérifiées = crédibilité maximale'],
+    elite:['Tout de Club','Outils de scouting IA (rapports générés)','Accès illimité à toutes fonctionnalités','Support prioritaire 24/7','API partenaires disponible']
+  }[plan] || [];
+
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:16px">
+        <div>
+          <div class="t-xs" style="margin-bottom:6px">Plan actuel</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <span class="t-h3">${planObj.name}</span>
+            ${planBadgeHTML}
+          </div>
+          <div class="t-sm">${plan==='free'?'Gratuit — passez Pro pour plus de visibilité et pour contacter des joueurs':`${planObj.price}€/mois`}</div>
+        </div>
+        ${plan!=='free'?`<button class="btn btn-danger btn-sm" onclick="cancelSubscription()">Annuler l'abonnement</button>`:''}
+      </div>
+      ${featuresHTML.length?`
+        <div style="border-top:1px solid var(--border);padding-top:14px">
+          <div class="t-xs" style="margin-bottom:10px">Inclus dans votre plan</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${featuresHTML.map(f=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--white60)"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>${f}</div>`).join('')}
+          </div>
+        </div>`:''}
+    </div>
+
+    ${plan==='free'?`
+    <div style="margin-bottom:16px;padding:16px;background:rgba(59,130,246,.08);border:1px solid var(--blue-border);border-radius:var(--r-lg)">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px">🔒 Fonctionnalités débloquées avec Pro</div>
+      <div class="t-sm">Vous verrez les profils complets des joueurs, pourrez les contacter directement, et votre profil sera mis en avant auprès des scouts.</div>
+    </div>`:''}
+
+    <div class="t-h4" style="margin-bottom:16px">${plan==='free'?'Choisir un plan':'Changer de plan'}</div>
+    <div class="pricing-grid">
+      ${Object.entries(PLANS).filter(([k])=>k!=='free'&&k!==plan).map(([k,p])=>`
+        <div class="plan-card ${k==='pro'?'featured':''}" style="border-color:${k==='pro'?'var(--blue-border)':k==='club'?'var(--gold-border)':'var(--purple-border)'}">
+          <div class="t-xs" style="color:${k==='pro'?'var(--blue-light)':k==='club'?'var(--gold-light)':'var(--purple)'};margin-bottom:6px">${k.toUpperCase()}</div>
+          <div class="t-h3">${p.name}</div>
+          <div class="plan-price"><sup>${p.price}</sup>€<sub>/mois</sub></div>
+          <div style="margin:14px 0;display:flex;flex-direction:column;gap:5px">
+            ${k==='pro'?'<div class="plan-feature"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Voir profils complets</div><div class="plan-feature"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Contacter les joueurs</div><div class="plan-feature"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Vidéos illimitées</div>':''}
+            ${k==='club'?'<div class="plan-feature"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Tout de Pro</div><div class="plan-feature"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Certification club</div><div class="plan-feature"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>50 joueurs managés</div>':''}
+            ${k==='elite'?'<div class="plan-feature"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Tout de Club</div><div class="plan-feature"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Scouting IA</div><div class="plan-feature"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Support prioritaire</div>':''}
+          </div>
+          <div id="paypal-btn-${k}" class="paypal-container"></div>
+          <div class="t-sm" style="text-align:center;margin-top:8px">🔒 Paiement sécurisé via PayPal</div>
+        </div>`).join('')}
+    </div>
+    <div class="t-sm" style="text-align:center;margin-top:20px;color:var(--white35)">Annulez à tout moment · Aucun engagement · Facturation mensuelle via PayPal</div>
+  `;
+
+  // Render PayPal buttons after DOM is ready
+  setTimeout(() => {
+    Object.entries(PLANS).filter(([k])=>k!=='free'&&k!==plan).forEach(([planKey]) => {
+      renderPayPalButton(planKey);
+    });
+  }, 100);
+}
+
+function renderPayPalButton(planKey) {
+  const containerId = `paypal-btn-${planKey}`;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (PAYPAL_DEMO_MODE) {
+    // Demo mode: show a simulated button
+    container.innerHTML = `
+      <button class="btn btn-paypal" style="width:100%;justify-content:center;font-size:15px;padding:12px" onclick="activatePlanDemo('${planKey}')">
+        <svg width="20" height="14" viewBox="0 0 24 16" fill="none" style="flex-shrink:0"><rect width="24" height="16" rx="3" fill="#003087"/><text x="4" y="12" font-family="Arial" font-size="8" font-weight="bold" fill="#009cde">Pay</text><text x="12" y="12" font-family="Arial" font-size="8" font-weight="bold" fill="#012169">Pal</text></svg>
+        S'abonner via PayPal
+      </button>
+      <div class="t-sm" style="text-align:center;margin-top:4px;color:var(--gold-light)">Mode démo — configurez votre Plan ID PayPal</div>`;
+    return;
+  }
+
+  // Production PayPal Subscriptions SDK
+  if (typeof paypal === 'undefined') {
+    container.innerHTML = `<div class="t-sm" style="color:var(--red-light)">PayPal SDK non chargé. Vérifiez votre connexion.</div>`;
+    return;
+  }
+
+  paypal.Buttons({
+    style: {
+      shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe',
+      height: 44
+    },
+    createSubscription: function(data, actions) {
+      return actions.subscription.create({
+        plan_id: PAYPAL_PLANS[planKey]
+      });
+    },
+    onApprove: async function(data, actions) {
+      toast('Paiement reçu ! Activation en cours...', 'success');
+      await activatePlan(planKey, data.subscriptionID);
+    },
+    onError: function(err) {
+      console.error('PayPal error', err);
+      toast('Erreur PayPal. Réessayez ou contactez le support.', 'error');
+    },
+    onCancel: function() {
+      toast('Paiement annulé.', 'info');
+    }
+  }).render('#' + containerId);
+}
+
+async function activatePlanDemo(planKey) {
+  if (!A.user) { goTo('login'); return; }
+  const plan = PLANS[planKey];
+  const confirmed = confirm(`⚠️ MODE DÉMO\n\nAbonnement ${plan.name} — ${plan.price}€/mois\n\nEn production, vous seriez redirigé vers PayPal.\n\nActiver la démo ?`);
+  if (!confirmed) return;
+  await activatePlan(planKey, `DEMO_${Date.now()}`);
+}
+
+async function activatePlan(planKey, subscriptionId) {
+  if (!A.user) return;
+  const plan = PLANS[planKey];
+  try {
+    await db.ref(`players/${A.user.uid}/plan`).set(planKey);
+    await db.ref(`users/${A.user.uid}/plan`).set(planKey);
+    await db.ref(`users/${A.user.uid}/planActiveSince`).set(Date.now());
+    await db.ref(`users/${A.user.uid}/paypalSubscriptionId`).set(subscriptionId);
+    A.profile.plan = planKey;
+    await pushNotif(A.user.uid, {type:'subscription',icon:'⭐',text:`Abonnement ${plan.name} activé ! Bienvenue dans ELEVN Pro. Vous pouvez maintenant voir les profils complets et contacter les joueurs.`,read:false,ts:Date.now()});
+    toast(`🎉 Abonnement ${plan.name} activé !`, 'success');
+    renderProfilePage();
+    renderSubscriptionTab();
+    renderHomePlanBanner();
+    // Refresh discover note
+    const discNote = document.getElementById('discoverPlanNote');
+    if (discNote) discNote.textContent = '✓ Vous pouvez voir les profils complets et contacter les joueurs.';
+  } catch(e) { toast('Erreur activation: '+e.message,'error'); }
+}
+
+async function cancelSubscription() {
+  if (!confirm('Annuler votre abonnement ? Vous reviendrez au plan gratuit immédiatement.')) return;
+  await db.ref(`players/${A.user.uid}/plan`).set('free');
+  await db.ref(`users/${A.user.uid}/plan`).set('free');
+  await db.ref(`users/${A.user.uid}/paypalSubscriptionId`).set(null);
+  A.profile.plan = 'free';
+  toast('Abonnement annulé. Vous êtes repassé au plan Starter.','info');
+  renderSubscriptionTab();
+  renderHomePlanBanner();
+  renderProfilePage();
+}
+
+function showUpgradeModal(feature, description) {
+  const el = document.getElementById('upgradeModalBody');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="upgrade-gate" style="margin-bottom:20px">
+      <div style="font-size:48px;margin-bottom:12px">🔒</div>
+      <div class="t-h3" style="margin-bottom:8px">${feature}</div>
+      <p class="t-body" style="font-size:14px;margin-bottom:24px">${description}</p>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:300px;margin:0 auto">
+        <button class="btn btn-blue" style="justify-content:center" onclick="closeModal('modalUpgrade');showTab('subscription')">
+          ⭐ Passer Scout Pro — 90€/mois
+        </button>
+        <div class="t-sm" style="text-align:center">Annulez à tout moment · PayPal sécurisé</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Voir les profils complets de tous les joueurs</div>
+      <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Contacter les joueurs directement</div>
+      <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Vidéos illimitées</div>
+      <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Badge Pro visible aux scouts</div>
+      <div class="plan-feature"><svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="var(--green-light)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>Priorité dans les classements et recherches</div>
+    </div>`;
+  openModal('modalUpgrade');
+}
+
+function renderHomePlanBanner() {
+  const el = document.getElementById('homePlanBanner');
+  if (!el) return;
+  const plan = getPlan();
+  if (plan !== 'free') { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div style="background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(168,85,247,.1));border:1px solid var(--blue-border);border-radius:var(--r-lg);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:3px">🔒 Plan Starter — fonctionnalités limitées</div>
+        <div class="t-sm">Passez Pro pour voir les profils complets, contacter les joueurs et avoir des vidéos illimitées.</div>
+      </div>
+      <button class="btn btn-blue btn-sm" onclick="showTab('subscription')">Voir les plans →</button>
+    </div>`;
+}
+
+/* ═══ PROFILE ═══ */
+function renderProfilePage() {
+  const p = A.profile;
+  if (!p) return;
+  renderAvatar('profileAvatar',p,'av-120');
+  renderAvatar('navAvatar',p,'av-32');
+  renderAvatar('modalAvatar',p,'av-80');
+  setText('profileName', p.name||'—');
+  setText('profilePos', [p.position, p.foot?p.foot+' foot':''].filter(Boolean).join(' · ')||'Aucun poste renseigné');
+  setText('profileLocation', p.city&&p.country?`📍 ${p.city}, ${p.country}`:'');
+  setText('profileAge', p.age?`🎂 ${p.age} ans`:'');
+  setText('profileClub', p.club?`🏟 ${p.club}`:'');
+
+  const pb = document.getElementById('profilePlanBadge');
+  if (pb) {
+    const badges = {pro:'<span class="plan-badge-pro">⭐ Pro</span>',club:'<span class="plan-badge-club">🏟 Club</span>',elite:'<span class="plan-badge-elite">👑 Elite</span>'};
+    pb.innerHTML = badges[p.plan]||'';
+  }
+  const verBadge = document.getElementById('profileVerifiedBadge');
+  const clubCertBadge = document.getElementById('profileClubCertBadge');
+  if (verBadge) verBadge.style.display = p.verified?'inline-flex':'none';
+  if (clubCertBadge) clubCertBadge.style.display = p.certificationStatus==='verified'?'inline-flex':'none';
+
+  setText('profileWorldRank', p.worldRank?'#'+p.worldRank:'—');
+  setText('pMatches', p.matches??'—');
+  setText('pGoals', p.goals??'—');
+  setText('pAssists', p.assists??'—');
+  setText('pMins', p.minutesPlayed??'—');
+  setText('pHeight', p.height?p.height+' cm':'—');
+  setText('pWeight', p.weight?p.weight+' kg':'—');
+  setText('pFoot', p.foot||'—');
+  setText('pNationality', p.country||'—');
+
+  const bioCard = document.getElementById('profileBioCard');
+  const bioEl = document.getElementById('profileBio');
+  if (bioCard&&bioEl) { if(p.bio){bioCard.style.display='block';bioEl.textContent=p.bio;}else bioCard.style.display='none'; }
+
+  renderBadges(p);
+
+  const completion = computeCompletion(p);
+  const homeComp = document.getElementById('homeCompletion');
+  const homeCompBar = document.getElementById('homeCompletionBar');
+  if (homeComp) homeComp.textContent = completion+'%';
+  if (homeCompBar) homeCompBar.style.width = completion+'%';
+
+  const sName = document.getElementById('settingsName');
+  const sEmail = document.getElementById('settingsEmail');
+  if (sName) sName.value = p.name||'';
+  if (sEmail&&A.user) sEmail.value = A.user.email||'';
+
+  renderHomePlanBanner();
+}
+
+function renderAvatar(elId, p, sizeClass) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.className = 'av '+sizeClass;
+  if (p&&p.photoURL) { el.innerHTML = `<img src="${esc(p.photoURL)}" alt="">`; el.style.background='transparent'; }
+  else if (p&&p.name) { const i=p.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(); el.textContent=i; el.style.background=strToColor(p.name); el.style.color='#fff'; }
+  else { el.textContent='?'; el.style.background='var(--surface3)'; }
+}
+
+function renderAvatarInline(p, sizeClass) {
+  if (p&&p.photoURL) return `<div class="av ${sizeClass}" style="background:transparent"><img src="${esc(p.photoURL)}" alt=""></div>`;
+  if (p&&p.name) { const i=p.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(); return `<div class="av ${sizeClass}" style="background:${strToColor(p.name)};color:#fff">${i}</div>`; }
+  return `<div class="av ${sizeClass}">?</div>`;
+}
+
+function renderBadges(p) {
+  const el = document.getElementById('profileBadges');
+  if (!el) return;
+  const badges = [];
+  if (p.verified) badges.push({e:'✓',l:'Profil Vérifié',d:'Identité confirmée par ELEVN',bg:'var(--green-bg)',b:'var(--green-border)'});
+  if (p.certificationStatus==='verified') badges.push({e:'🏟',l:'Club Certifié',d:'Stats vérifiées par documents officiels',bg:'var(--blue-bg)',b:'var(--blue-border)'});
+  if (['pro','club','elite'].includes(p.plan)) badges.push({e:'⭐',l:'Membre Pro',d:'Accès prioritaire aux scouts',bg:'var(--blue-bg)',b:'var(--blue-border)'});
+  if ((p.goals||0)>=10&&(p.matches||0)>=10) badges.push({e:'⚡',l:'Elite Prospect',d:'Performances de haut niveau',bg:'var(--gold-bg)',b:'var(--gold-border)'});
+  if ((p.goals||0)>=15) badges.push({e:'🎯',l:'Goal Machine',d:'15+ buts en une saison',bg:'var(--blue-bg)',b:'var(--blue-border)'});
+  if ((p.assists||0)>=10) badges.push({e:'🎪',l:'Playmaker',d:'10+ passes décisives',bg:'var(--purple-bg)',b:'var(--purple-border)'});
+  if (!badges.length) { el.innerHTML = '<div class="t-sm">Complétez vos stats et votre profil pour gagner des badges.</div>'; return; }
+  el.innerHTML = badges.map(b=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:${b.bg};border:1px solid ${b.b};border-radius:var(--r)">
+      <span style="font-size:22px">${b.e}</span>
+      <div><div style="font-size:14px;font-weight:600">${b.l}</div><div class="t-sm" style="margin-top:1px">${b.d}</div></div>
+    </div>`).join('');
+}
+
+function computeCompletion(p) {
+  let s=0;
+  ['name','position','country','city','age','height','weight','foot','club'].forEach(f=>{if(p[f])s++;});
+  if(p.bio)s++; if(p.photoURL)s+=2; if((p.goals||0)>0||(p.matches||0)>0)s++;
+  return Math.min(100, Math.round((s/12)*100));
+}
+
+function renderHomeStats() {
+  const p = A.profile; if (!p) return;
+  const h = new Date().getHours();
+  const g = h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
+  setText('homeGreeting', `${g}, ${p.firstName||p.name?.split(' ')[0]||'là'} 👋`);
+  setText('homeViews', p.profileViews||'0');
+  setText('homeRank', p.worldRank?'#'+p.worldRank:'—');
+  if (A.user) db.ref(`videos/${A.user.uid}`).once('value', s=>setText('homeVideos', s.numChildren()));
+}
+
+/* ═══ SAVE PROFILE ═══ */
+function loadProfileIntoForm() {
+  const p = A.profile||{};
+  const fields = {'ep-first':'firstName','ep-last':'lastName','ep-pos':'position',
+    'ep-country':'country','ep-city':'city','ep-age':'age','ep-height':'height',
+    'ep-weight':'weight','ep-foot':'foot','ep-club':'club','ep-bio':'bio',
+    'ep-matches':'matches','ep-goals':'goals','ep-assists':'assists','ep-mins':'minutesPlayed'};
+  Object.entries(fields).forEach(([id,key])=>{const el=document.getElementById(id);if(el)el.value=p[key]||'';});
+  if (A.profile) renderAvatar('modalAvatar',A.profile,'av-80');
+}
+
+async function saveProfile() {
+  if (!A.user) return;
+  const btn = document.getElementById('epSaveBtn');
+  const errEl = document.getElementById('ep-error');
+  errEl.style.display='none';
+  const first = document.getElementById('ep-first').value.trim();
+  if (!first) { showErr(errEl,'Le prénom est obligatoire.'); return; }
+  setBtnLoading(btn,true);
+  const last = document.getElementById('ep-last').value.trim();
+  const data = {
+    firstName:first,lastName:last,name:`${first} ${last}`.trim(),
+    position:document.getElementById('ep-pos').value,
+    country:document.getElementById('ep-country').value.trim(),
+    city:document.getElementById('ep-city').value.trim(),
+    age:parseInt(document.getElementById('ep-age').value)||0,
+    height:parseInt(document.getElementById('ep-height').value)||0,
+    weight:parseInt(document.getElementById('ep-weight').value)||0,
+    foot:document.getElementById('ep-foot').value,
+    club:document.getElementById('ep-club').value.trim(),
+    bio:document.getElementById('ep-bio').value.trim(),
+    matches:parseInt(document.getElementById('ep-matches').value)||0,
+    goals:parseInt(document.getElementById('ep-goals').value)||0,
+    assists:parseInt(document.getElementById('ep-assists').value)||0,
+    minutesPlayed:parseInt(document.getElementById('ep-mins').value)||0,
+    updatedAt:Date.now()
+  };
+  data.rating = computeRating(data);
+  try {
+    await db.ref(`players/${A.user.uid}`).update(data);
+    await db.ref(`users/${A.user.uid}`).update({displayName:data.name});
+    await auth.currentUser.updateProfile({displayName:data.name});
+    A.profile = {...A.profile,...data};
+    renderProfilePage();
+    closeModal('modalEditProfile');
+    toast('Profil sauvegardé !','success');
+  } catch(e) { showErr(errEl,e.message); }
+  finally { setBtnLoading(btn,false); }
+}
+
+function computeRating(p) {
+  let r=50;
+  if ((p.goals||0)>0) r+=Math.min(20,p.goals*1.2);
+  if ((p.assists||0)>0) r+=Math.min(15,p.assists*1.0);
+  if ((p.matches||0)>0) r+=Math.min(10,p.matches*0.35);
+  if (p.height>175) r+=2;
+  if (p.position) r+=3;
+  return Math.min(99,Math.round(r));
+}
+
+/* ═══ PHOTO ═══ */
+function triggerPhotoUpload() { document.getElementById('photoInput').click(); }
+function handlePhotoUpload(e) {
+  const file = e.target.files[0]; if(!file) return;
+  if (file.size>2*1024*1024) { toast('Photo max 2MB','error'); return; }
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const dataUrl = reader.result;
+    try {
+      await db.ref(`players/${A.user.uid}/photoURL`).set(dataUrl);
+      A.profile.photoURL = dataUrl;
+      renderAvatar('modalAvatar',A.profile,'av-80');
+      renderAvatar('profileAvatar',A.profile,'av-120');
+      renderAvatar('navAvatar',A.profile,'av-32');
+      toast('Photo mise à jour !','success');
+    } catch(err) { toast('Erreur: '+err.message,'error'); }
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ═══ VIDEO SOURCE ═══ */
+function setVideoSource(src) {
+  A.videoSource = src;
+  ['youtube','drive'].forEach(s => document.getElementById(`vsrc-${s}`)?.classList.toggle('on',s===src));
+  const urlInput = document.getElementById('vt-url');
+  const urlLabel = document.getElementById('vt-url-label');
+  const urlHint = document.getElementById('vt-url-hint');
+  const preview = document.getElementById('vt-preview');
+  if (preview) preview.style.display='none';
+  if (src==='youtube') {
+    if(urlLabel) urlLabel.textContent='Lien YouTube *';
+    if(urlInput) urlInput.placeholder='https://youtube.com/watch?v=...';
+    if(urlHint) urlHint.textContent='Colle le lien YouTube complet. La vidéo sera intégrée directement.';
+  } else {
+    if(urlLabel) urlLabel.textContent='Lien Google Drive *';
+    if(urlInput) urlInput.placeholder='https://drive.google.com/file/d/.../view';
+    if(urlHint) urlHint.textContent='Le fichier doit être partagé "Tout le monde avec le lien".';
+  }
+  if (urlInput) urlInput.oninput = () => previewVideoInput(urlInput.value);
+}
+
+function previewVideoInput(url) {
+  const preview = document.getElementById('vt-preview');
+  const iframe = document.getElementById('vt-iframe');
+  if (!preview||!iframe) return;
+  const embedUrl = getEmbedUrl(url);
+  if (embedUrl) { iframe.src=embedUrl; preview.style.display='block'; }
+  else preview.style.display='none';
+}
+
+function getEmbedUrl(url) {
+  if (!url) return null;
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}?rel=0`;
+  const ytShorts = url.match(/youtube\.com\/shorts\/([\w-]{11})/);
+  if (ytShorts) return `https://www.youtube.com/embed/${ytShorts[1]}?rel=0`;
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/);
+  if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+  const driveOpen = url.match(/drive\.google\.com\/open\?id=([\w-]+)/);
+  if (driveOpen) return `https://drive.google.com/file/d/${driveOpen[1]}/preview`;
+  return null;
+}
+
+function getVideoThumb(url) {
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/);
+  if (ytMatch) return `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
+  const ytShorts = url.match(/youtube\.com\/shorts\/([\w-]{11})/);
+  if (ytShorts) return `https://img.youtube.com/vi/${ytShorts[1]}/mqdefault.jpg`;
+  return null;
+}
+
+function checkVideoLimit() {
+  if (!A.user) return;
+  const plan = getPlan();
+  const limit = PLANS[plan].videoLimit;
+  db.ref(`videos/${A.user.uid}`).once('value', snap => {
+    if (snap.numChildren()>=limit) {
+      if (plan==='free') {
+        showUpgradeModal('Vidéos illimitées 🎬','Le plan Starter est limité à 3 vidéos. Passez Pro pour uploader autant de highlights que vous voulez.');
+      } else {
+        toast(`Limite de ${limit} vidéos atteinte.`,'error');
+      }
+    } else {
+      openModal('modalUploadVideo');
+    }
+  });
+}
+
+async function uploadVideo() {
+  if (!A.user) return;
+  const url = document.getElementById('vt-url').value.trim();
+  const title = document.getElementById('vt-title').value.trim();
+  const type = document.getElementById('vt-type').value;
+  const desc = document.getElementById('vt-desc').value.trim();
+  const errEl = document.getElementById('vt-error');
+  errEl.style.display='none';
+  if (!url) { showErr(errEl,'Veuillez entrer un lien vidéo.'); return; }
+  if (!title) { showErr(errEl,'Veuillez entrer un titre.'); return; }
+  const embedUrl = getEmbedUrl(url);
+  if (!embedUrl) { showErr(errEl,'Lien invalide. Utilisez un lien YouTube ou Google Drive valide.'); return; }
+  const btn = document.getElementById('vtUploadBtn');
+  setBtnLoading(btn,true);
+  const videoData = {
+    uid:A.user.uid, title, type, description:desc,
+    url, source:A.videoSource,
+    thumbnail:getVideoThumb(url)||'',
+    embedUrl, views:0,
+    playerName:A.profile?.name||'',
+    ts:Date.now()
+  };
+  try {
+    await db.ref(`videos/${A.user.uid}`).push(videoData);
+    await pushNotif(A.user.uid,{type:'video',icon:'🎬',text:`Votre vidéo "${title}" a été ajoutée !`,read:false,ts:Date.now()});
+    closeModal('modalUploadVideo');
+    toast('Vidéo ajoutée !','success');
+    document.getElementById('vt-url').value='';
+    document.getElementById('vt-title').value='';
+    document.getElementById('vt-desc').value='';
+    if(document.getElementById('vt-preview')) document.getElementById('vt-preview').style.display='none';
+    loadVideos();
+    loadProfileVideosPreview();
+  } catch(e) { showErr(errEl,e.message); }
+  finally { setBtnLoading(btn,false); }
+}
+
+function loadVideos() {
+  if (!A.user) return;
+  const grid = document.getElementById('videosGrid');
+  if (!grid) return;
+  db.ref(`videos/${A.user.uid}`).orderByChild('ts').on('value', snap => {
+    const videos = [];
+    snap.forEach(c=>videos.push({id:c.key,...c.val()}));
+    videos.reverse();
+    setText('homeVideos', videos.length);
+    if (!videos.length) {
+      grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div style="font-size:14px;margin-bottom:10px">Aucune vidéo pour l'instant.</div><button class="btn btn-secondary btn-sm" onclick="checkVideoLimit()">+ Ajouter ma première vidéo</button></div>`;
+      return;
+    }
+    grid.innerHTML = videos.map(v=>videoCardHTML(v,false,true)).join('');
+  });
+}
+
+function loadProfileVideosPreview() {
+  if (!A.user) return;
+  const el = document.getElementById('profileVideosPreview');
+  if (!el) return;
+  db.ref(`videos/${A.user.uid}`).orderByChild('ts').limitToLast(2).once('value', snap=>{
+    const videos=[];
+    snap.forEach(c=>videos.push({id:c.key,...c.val()}));
+    videos.reverse();
+    if (!videos.length) {
+      el.innerHTML=`<button class="btn btn-secondary btn-sm" style="width:fit-content" onclick="showTab('videos');checkVideoLimit()">+ Uploader ma première vidéo</button>`;
+      return;
+    }
+    el.innerHTML = videos.map(v=>videoCardHTML(v,true,false)).join('');
+  });
+}
+
+function videoCardHTML(v, compact=false, showDelete=false) {
+  const thumb = v.thumbnail||'';
+  const bg = '#0d1b2a';
+  const typeColors={'Highlights':'badge-gold','Match complet':'badge-blue','Entraînement':'badge-green','Buts':'badge-red'};
+  const typeClass = typeColors[v.type]||'badge-white';
+  const srcIcon = {youtube:'▶',drive:'▲'}[v.source]||'▶';
+  return `
+    <div class="video-card" onclick="playVideo('${esc(v.id||'')}','${esc(v.uid||A.user?.uid||'')}','${esc(v.embedUrl||v.url||'')}','${esc(v.title||'')}')">
+      <div class="video-thumb" style="background:${bg}">
+        ${thumb?`<img src="${esc(thumb)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:''}
+        <div class="video-play">
+          <svg width="16" height="16" fill="${bg}" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+        </div>
+        <div style="position:absolute;bottom:8px;left:8px">
+          <span class="badge ${typeClass}">${srcIcon} ${esc(v.type||'Video')}</span>
+        </div>
+        ${v.views?`<div style="position:absolute;bottom:8px;right:8px;font-size:11px;color:rgba(255,255,255,.6)">${v.views} vues</div>`:''}
+      </div>
+      <div class="video-info">
+        <div style="font-size:14px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(v.title)}</div>
+        <div class="t-sm">${timeAgo(v.ts)}</div>
+        ${v.description?`<div class="t-sm" style="margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(v.description)}</div>`:''}
+        ${showDelete?`<button class="btn btn-danger btn-sm" style="margin-top:8px;font-size:11px" onclick="event.stopPropagation();deleteMyVideo('${esc(v.id||'')}')">Supprimer</button>`:''}
+      </div>
+    </div>`;
+}
+
+function playVideo(videoId, uid, embedUrl, title) {
+  if (uid&&videoId) db.ref(`videos/${uid}/${videoId}/views`).transaction(v=>(v||0)+1);
+  const playerTitle = document.getElementById('videoPlayerTitle');
+  const playerEmbed = document.getElementById('videoPlayerEmbed');
+  if (playerTitle) playerTitle.textContent = title;
+  if (playerEmbed) {
+    if (embedUrl) {
+      playerEmbed.innerHTML=`<div class="embed-wrap"><iframe src="${esc(embedUrl)}" allowfullscreen allow="autoplay; encrypted-media"></iframe></div>`;
+    } else {
+      playerEmbed.innerHTML=`<div class="t-sm" style="text-align:center;padding:40px">Impossible de lire cette vidéo.</div>`;
+    }
+  }
+  openModal('modalVideoPlayer');
+}
+
+async function deleteMyVideo(videoId) {
+  if (!A.user||!videoId) return;
+  if (!confirm('Supprimer cette vidéo ?')) return;
+  await db.ref(`videos/${A.user.uid}/${videoId}`).remove();
+  toast('Vidéo supprimée.','info');
+}
+
+/* ═══ MESSAGING ═══ */
+function renderMessagesTab() {
+  const el = document.getElementById('messagesContent');
+  if (!el) return;
+
+  if (!canDo('canContact')) {
+    el.innerHTML = `
+      <div class="upgrade-gate">
+        <div style="font-size:48px;margin-bottom:12px">✉️</div>
+        <div class="t-h3" style="margin-bottom:8px">Messagerie Pro</div>
+        <p class="t-body" style="font-size:14px;margin-bottom:24px">Les messages sont réservés aux abonnés Pro et au-dessus. Passez Pro pour contacter les joueurs et recevoir des messages des recruteurs.</p>
+        <button class="btn btn-blue btn-lg" onclick="showTab('subscription')">⭐ Passer Pro — 90€/mois</button>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = `<div id="messagesThreadList"><div class="t-sm">Chargement des conversations...</div></div>`;
+
+  db.ref(`messages/${A.user.uid}`).once('value', snap => {
+    if (!snap.exists()) {
+      document.getElementById('messagesThreadList').innerHTML=`
+        <div class="empty-state">
+          <div style="font-size:14px;margin-bottom:6px">Aucune conversation pour l'instant.</div>
+          <div class="t-sm">Découvrez des joueurs et contactez-les depuis leur profil.</div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:14px" onclick="goTo('discover')">Explorer les joueurs</button>
+        </div>`;
+      return;
+    }
+    const threads = [];
+    snap.forEach(c => {
+      let lastMsg = null;
+      c.forEach(m => lastMsg = m.val());
+      threads.push({threadId:c.key,otherUid:c.key,...lastMsg});
+    });
+    threads.sort((a,b)=>b.ts-a.ts);
+    document.getElementById('messagesThreadList').innerHTML = threads.map(t=>`
+      <div class="notif-item" onclick="openThread('${esc(t.threadId)}')">
+        <div class="av av-40" style="background:var(--surface3);flex-shrink:0">${esc((t.senderName||'?').charAt(0))}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;margin-bottom:2px">${esc(t.senderName||t.threadId)}</div>
+          <div class="t-sm" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.text||'...')}</div>
+        </div>
+        <div class="t-sm">${timeAgo(t.ts)}</div>
+      </div>`).join('');
+  });
+}
+
+function openThread(otherUid) {
+  // Simple message thread view
+  const el = document.getElementById('messagesContent');
+  if (!el) return;
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <button class="btn btn-ghost btn-sm" onclick="renderMessagesTab()">← Retour</button>
+      <div class="t-h4" id="threadTitle">Conversation</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-height:300px;max-height:400px;overflow-y:auto;padding:16px;background:var(--surface2);border-radius:var(--r-lg);margin-bottom:14px" id="threadMessages"></div>
+    <div style="display:flex;gap:10px">
+      <input id="threadInput" class="inp" type="text" placeholder="Votre message..." style="flex:1" onkeydown="if(event.key==='Enter')sendMessage('${esc(otherUid)}')">
+      <button class="btn btn-primary" onclick="sendMessage('${esc(otherUid)}')">Envoyer</button>
+    </div>`;
+
+  db.ref(`messages/${A.user.uid}/${otherUid}`).on('value', snap => {
+    const msgs = [];
+    snap.forEach(c=>msgs.push({id:c.key,...c.val()}));
+    const container = document.getElementById('threadMessages');
+    if (!container) return;
+    if (!msgs.length) { container.innerHTML='<div class="t-sm" style="text-align:center">Commencez la conversation</div>'; return; }
+    container.innerHTML = msgs.map(m=>`
+      <div style="display:flex;flex-direction:column;align-items:${m.fromUid===A.user.uid?'flex-end':'flex-start'};gap:3px">
+        <div class="msg-bubble ${m.fromUid===A.user.uid?'msg-me':'msg-them'}">${esc(m.text)}</div>
+        <div class="t-sm">${timeAgo(m.ts)}</div>
+      </div>`).join('');
+    container.scrollTop = container.scrollHeight;
+  });
+}
+
+async function sendMessage(toUid) {
+  if (!A.user||!canDo('canContact')) return;
+  const input = document.getElementById('threadInput');
+  const text = input?.value.trim();
+  if (!text) return;
+  const msgData = {
+    fromUid:A.user.uid, toUid,
+    senderName:A.profile?.name||'',
+    text, ts:Date.now(), read:false
+  };
+  const key = db.ref().push().key;
+  const updates = {};
+  updates[`messages/${A.user.uid}/${toUid}/${key}`] = msgData;
+  updates[`messages/${toUid}/${A.user.uid}/${key}`] = msgData;
+  await db.ref().update(updates);
+  await pushNotif(toUid, {type:'message',icon:'✉️',text:`${A.profile?.name||'Quelqu\'un'} vous a envoyé un message.`,read:false,ts:Date.now()});
+  if (input) input.value='';
+}
+
+/* ═══ CONTACT PLAYER ═══ */
+function contactPlayer(targetUid, targetName) {
+  if (!A.user) { goTo('register'); return; }
+  if (!canDo('canContact')) {
+    showUpgradeModal('Contacter les joueurs ✉️',`Seuls les abonnés Pro peuvent envoyer des messages aux joueurs. Passez Pro pour contacter ${targetName} et tous les autres joueurs de la plateforme.`);
+    return;
+  }
+  // Open message modal
+  const titleEl = document.getElementById('contactModalTitle');
+  const bodyEl = document.getElementById('contactModalBody');
+  if (titleEl) titleEl.textContent = `Message à ${targetName}`;
+  if (bodyEl) {
+    bodyEl.innerHTML = `
+      <div class="contact-box" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div class="av av-40" style="background:var(--surface3)">${esc(targetName.charAt(0))}</div>
+          <div><div style="font-weight:600">${esc(targetName)}</div><div class="t-sm">Joueur ELEVN</div></div>
+        </div>
+        <div class="inp-group" style="margin-bottom:12px">
+          <label class="inp-label">Votre message</label>
+          <textarea id="contactMsgText" class="inp" rows="4" placeholder="Bonjour ${targetName}, je suis scout pour... J'ai vu votre profil ELEVN et..."></textarea>
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center" id="contactSendBtn" onclick="sendContactMessage('${esc(targetUid)}','${esc(targetName)}')">
+          Envoyer le message
+        </button>
+      </div>
+      <div class="t-sm" style="text-align:center">Le joueur recevra une notification et pourra vous répondre directement.</div>`;
+  }
+  closeModal('modalPlayer');
+  openModal('modalContact');
+}
+
+async function sendContactMessage(toUid, toName) {
+  if (!A.user||!canDo('canContact')) return;
+  const text = document.getElementById('contactMsgText')?.value.trim();
+  if (!text) { toast('Veuillez écrire un message.','error'); return; }
+  const btn = document.getElementById('contactSendBtn');
+  setBtnLoading(btn,true);
+  const msgData = {
+    fromUid:A.user.uid, toUid,
+    senderName:A.profile?.name||'',
+    text, ts:Date.now(), read:false
+  };
+  const key = db.ref().push().key;
+  const updates = {};
+  updates[`messages/${A.user.uid}/${toUid}/${key}`] = msgData;
+  updates[`messages/${toUid}/${A.user.uid}/${key}`] = msgData;
+  try {
+    await db.ref().update(updates);
+    await pushNotif(toUid,{type:'message',icon:'✉️',text:`${A.profile?.name||'Un recruteur'} vous a envoyé un message. Cliquez pour voir.`,read:false,ts:Date.now()});
+    await db.ref(`players/${toUid}/contactRequests`).transaction(v=>(v||0)+1);
+    closeModal('modalContact');
+    toast(`Message envoyé à ${toName} !`,'success');
+  } catch(e) { toast('Erreur: '+e.message,'error'); }
+  finally { setBtnLoading(btn,false); }
+}
+
+/* ═══ CERTIFICATION ═══ */
+let certDocDataUrl = null;
+
+function renderCertificationTab() {
+  const el = document.getElementById('certContent');
+  if (!el) return;
+  const p = A.profile||{};
+  const status = p.certificationStatus||'none';
+
+  const statusHTML = {
+    none:`<div class="cert-status cert-none"><span style="font-size:20px">📋</span><div><div style="font-weight:600;font-size:14px">Aucune certification active</div><div class="t-sm" style="margin-top:2px">Soumettez vos documents pour certifier votre club et vos stats.</div></div></div>`,
+    pending:`<div class="cert-status cert-pending"><span style="font-size:20px">⏳</span><div><div style="font-weight:600;font-size:14px">Certification en cours de vérification</div><div class="t-sm" style="margin-top:2px">Notre équipe examine vos documents. Délai : 24-48h.</div></div></div>`,
+    verified:`<div class="cert-status cert-verified"><span style="font-size:20px">✅</span><div><div style="font-weight:600;font-size:14px">Club certifié — ${esc(p.certificationClub||'')}</div><div class="t-sm" style="margin-top:2px">Vos statistiques sont authentifiées. Badge visible sur votre profil.</div></div></div>`
+  }[status]||'';
+
+  el.innerHTML = `
+    ${statusHTML}
+    <div class="card" style="margin-bottom:20px">
+      <div class="t-h4" style="margin-bottom:14px">Pourquoi se certifier ?</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px"><span style="font-size:20px">🏆</span><div><div style="font-size:13px;font-weight:600">Badge "Club Certifié" visible</div><div class="t-sm">Gage de confiance maximal pour les scouts et recruteurs.</div></div></div>
+        <div style="display:flex;gap:12px"><span style="font-size:20px">📊</span><div><div style="font-size:13px;font-weight:600">Stats authentifiées</div><div class="t-sm">Buts, passes, matchs vérifiés par documents officiels = zéro mensonge.</div></div></div>
+        <div style="display:flex;gap:12px"><span style="font-size:20px">🔍</span><div><div style="font-size:13px;font-weight:600">Priorité dans les recherches</div><div class="t-sm">Les profils certifiés apparaissent en premier lors des recherches de scouts.</div></div></div>
+      </div>
+    </div>
+
+    ${status!=='verified'?`
+    <div class="card">
+      <div class="t-h4" style="margin-bottom:6px">Soumettre votre certification</div>
+      <div class="t-sm" style="margin-bottom:16px">Uploadez l'un de ces documents :</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--r);font-size:12px">📄 Licence fédérale officielle</div>
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--r);font-size:12px">📋 Attestation du club (en-tête officiel)</div>
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--r);font-size:12px">🎽 Photo maillot + feuille de match visible</div>
+        <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--r);font-size:12px">📸 Carte de membre du club officielle</div>
+      </div>
+      <div class="inp-group" style="margin-bottom:12px">
+        <label class="inp-label">Nom du club à certifier *</label>
+        <input id="certClubName" class="inp" type="text" placeholder="FC Paris Academy" value="${esc(p.club||'')}">
+      </div>
+      <div class="inp-group" style="margin-bottom:12px">
+        <label class="inp-label">Numéro de licence / Ligue (optionnel)</label>
+        <input id="certLicenseNum" class="inp" type="text" placeholder="Ex: 75-123456 — Ligue de Paris">
+      </div>
+      <div class="inp-group" style="margin-bottom:12px">
+        <label class="inp-label">Saison concernée</label>
+        <input id="certSeason" class="inp" type="text" placeholder="2024-2025">
+      </div>
+      <div class="inp-group" style="margin-bottom:16px">
+        <label class="inp-label">Commentaire / Contexte</label>
+        <textarea id="certComment" class="inp" rows="2" placeholder="Ex: Attaquant en Ligue 1 Amateur, saison 2024-2025..." style="resize:vertical"></textarea>
+      </div>
+
+      <!-- Document Upload — même mécanisme que photo de profil -->
+      <div class="inp-label" style="margin-bottom:8px">Document justificatif * (photo ou PDF — max 5 MB)</div>
+      <div class="upload-zone" id="certDropZone" style="margin-bottom:14px">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color:var(--white35);margin:0 auto 10px"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        <div style="font-size:14px;font-weight:500;margin-bottom:3px">Cliquez pour uploader ou glissez-déposez</div>
+        <div class="t-sm">JPG, PNG, PDF — max 5 MB</div>
+        <input type="file" id="certDocInput" accept="image/*,.pdf" onchange="handleCertDocUpload(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0">
+      </div>
+      <div id="certDocPreview" style="display:none;margin-bottom:14px"></div>
+
+      <!-- Signature numérique -->
+      <div style="padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <input type="checkbox" id="certSignature" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green-light)">
+          <label for="certSignature" style="font-size:13px;cursor:pointer;line-height:1.5">Je certifie sur l'honneur que les statistiques et informations renseignées sur mon profil ELEVN sont exactes et correspondent à des performances réelles.</label>
+        </div>
+        <div class="inp-group">
+          <label class="inp-label">Signature numérique (votre nom complet)</label>
+          <input id="certSignatureName" class="inp" type="text" placeholder="Votre prénom et nom" value="${esc(p.name||'')}">
+        </div>
+      </div>
+
+      <div id="certError" class="error-msg"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" id="certSubmitBtn" onclick="submitCertification()">
+        Soumettre ma certification
+      </button>
+    </div>`:`
+    <div class="card">
+      <div class="t-h4" style="margin-bottom:10px">Certification active ✅</div>
+      <div class="t-sm">Vos statistiques sont certifiées. Pour toute mise à jour, contactez notre équipe.</div>
+      ${p.certificationClub?`<div style="margin-top:12px;padding:10px 14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--r);font-size:13px">🏟 ${esc(p.certificationClub)}</div>`:''}
+    </div>`}
+  `;
+}
+
+function handleCertDocUpload(e) {
+  const file = e.target.files[0]; if(!file) return;
+  if (file.size>5*1024*1024) { toast('Document max 5MB','error'); return; }
+  const preview = document.getElementById('certDocPreview');
+  const reader = new FileReader();
+  reader.onload = () => {
+    certDocDataUrl = reader.result;
+    if (preview) {
+      preview.style.display='block';
+      if (file.type.startsWith('image/')) {
+        preview.innerHTML=`<img src="${certDocDataUrl}" style="max-height:200px;border-radius:var(--r);border:1px solid var(--border);" alt="Document"><div class="t-sm" style="margin-top:6px">✓ ${esc(file.name)}</div>`;
+      } else {
+        preview.innerHTML=`<div style="padding:12px;background:var(--surface2);border-radius:var(--r);font-size:13px">📄 ${esc(file.name)} (${(file.size/1024).toFixed(0)} KB) — chargé ✓</div>`;
+      }
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitCertification() {
+  if (!A.user) return;
+  const clubName = document.getElementById('certClubName')?.value.trim();
+  const licenseNum = document.getElementById('certLicenseNum')?.value.trim();
+  const season = document.getElementById('certSeason')?.value.trim();
+  const comment = document.getElementById('certComment')?.value.trim();
+  const signatureCheck = document.getElementById('certSignature')?.checked;
+  const signatureName = document.getElementById('certSignatureName')?.value.trim();
+  const errEl = document.getElementById('certError');
+  if(errEl) errEl.style.display='none';
+
+  if (!clubName) { if(errEl){errEl.textContent='Veuillez indiquer le nom du club.';errEl.style.display='block';} return; }
+  if (!certDocDataUrl) { if(errEl){errEl.textContent='Veuillez uploader un document justificatif.';errEl.style.display='block';} return; }
+  if (!signatureCheck) { if(errEl){errEl.textContent='Vous devez certifier sur l\'honneur l\'exactitude de vos informations.';errEl.style.display='block';} return; }
+  if (!signatureName) { if(errEl){errEl.textContent='Veuillez signer avec votre nom complet.';errEl.style.display='block';} return; }
+
+  const btn = document.getElementById('certSubmitBtn');
+  setBtnLoading(btn,true);
+  try {
+    const certData = {
+      uid:A.user.uid, playerName:A.profile?.name||'',
+      clubName, licenseNum:licenseNum||'', season:season||'',
+      comment:comment||'', docData:certDocDataUrl,
+      signatureName, signedAt:Date.now(),
+      status:'pending', submittedAt:Date.now()
+    };
+    await db.ref(`certifications/${A.user.uid}`).set(certData);
+    await db.ref(`players/${A.user.uid}/certificationStatus`).set('pending');
+    await db.ref(`players/${A.user.uid}/certificationClub`).set(clubName);
+    A.profile.certificationStatus = 'pending';
+    A.profile.certificationClub = clubName;
+    certDocDataUrl = null;
+    await pushNotif(A.user.uid,{type:'certification',icon:'⏳',text:`Votre demande de certification pour "${clubName}" a été soumise. Réponse sous 24-48h.`,read:false,ts:Date.now()});
+    toast('Demande envoyée ! Notre équipe vous répond sous 48h 🎯','success');
+    renderCertificationTab();
+    renderProfilePage();
+  } catch(e) { if(errEl){errEl.textContent=e.message;errEl.style.display='block';} }
+  finally { setBtnLoading(btn,false); }
+}
+
+/* ═══ RANKINGS ═══ */
+function loadRankings() {
+  const el = document.getElementById('rankingsList');
+  if (!el) return;
+  el.innerHTML = '<div class="empty-state">Chargement...</div>';
+  const country = document.getElementById('rankCountryFilter')?.value||'';
+  const pos = document.getElementById('rankPosFilter')?.value||'';
+  db.ref('players').orderByChild('rating').once('value', snap => {
+    const players = [];
+    snap.forEach(c=>{const p={id:c.key,...c.val()};if(p.name){if(country&&p.country!==country)return;if(pos&&p.position!==pos)return;players.push(p);}});
+    players.sort((a,b)=>(b.rating||0)-(a.rating||0));
+    if (!players.length) { el.innerHTML='<div class="empty-state">Aucun joueur trouvé.</div>'; return; }
+    if (A.user) {
+      const myIdx = players.findIndex(p=>p.id===A.user.uid);
+      if (myIdx!==-1) { db.ref(`players/${A.user.uid}/worldRank`).set(myIdx+1); setText('homeRank','#'+(myIdx+1)); setText('profileWorldRank','#'+(myIdx+1)); }
+    }
+    el.innerHTML = players.slice(0,50).map((p,i)=>{
+      const rank=i+1, rc=rank===1?'r1':rank===2?'r2':rank===3?'r3':'';
+      const isMine=A.user&&p.id===A.user.uid;
+      const certBadge=p.certificationStatus==='verified'?' 🏟':'';
+      const planBadge=p.plan==='pro'?' ⭐':p.plan==='club'||p.plan==='elite'?' 👑':'';
+      return `
+        <div class="rank-row" onclick="showPlayerModal(${JSON.stringify(JSON.stringify(p))})" style="${isMine?'background:rgba(59,130,246,.08);':''}">
+          <div class="rank-num ${rc}">${rank<=3?['🥇','🥈','🥉'][rank-1]:'#'+rank}</div>
+          ${renderAvatarInline(p,'av-40')}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${esc(p.name)}${certBadge}${planBadge}${isMine?' <span class="badge badge-blue" style="font-size:9px">Vous</span>':''}
+            </div>
+            <div class="t-sm">${[p.position,p.country].filter(Boolean).join(' · ')||'Joueur'}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:16px;font-weight:800">${p.rating||50}</div>
+            <div class="t-xs">Rating</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;min-width:60px">
+            <div style="font-size:13px;font-weight:600">${p.goals||0}B · ${p.assists||0}PD</div>
+            <div class="t-xs">${p.matches||0} matchs</div>
+          </div>
+        </div>`;
+    }).join('');
+  });
+}
+
+function loadHomeTopPlayers() {
+  const el = document.getElementById('homeTopPlayers');
+  if (!el) return;
+  db.ref('players').orderByChild('rating').limitToLast(5).once('value', snap => {
+    const players=[];
+    snap.forEach(c=>players.push({id:c.key,...c.val()}));
+    players.sort((a,b)=>(b.rating||0)-(a.rating||0));
+    if (!players.length) { el.innerHTML='<div class="t-sm">Aucun joueur.</div>'; return; }
+    el.innerHTML = players.map((p,i)=>`
+      <div class="rank-row" onclick="showPlayerModal(${JSON.stringify(JSON.stringify(p))})" style="padding:9px 10px">
+        <div class="rank-num ${i===0?'r1':i===1?'r2':i===2?'r3':''}" style="font-size:14px;min-width:28px">#${i+1}</div>
+        ${renderAvatarInline(p,'av-32')}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
+          <div class="t-sm">${p.position||'Joueur'}</div>
+        </div>
+        <div style="font-size:13px;font-weight:700">${p.rating||50}</div>
+      </div>`).join('');
+  });
+}
+
+/* ═══ NOTIFICATIONS ═══ */
+function renderNotifList(notifs) {
+  const el = document.getElementById('notifList');
+  const sub = document.getElementById('notifSubtitle');
+  if (!el) return;
+  const unread = notifs.filter(n=>!n.read).length;
+  if (sub) sub.textContent = unread>0?`${unread} notification${unread>1?'s':''} non lue${unread>1?'s':''}`:'Tout est lu ✓';
+  if (!notifs.length) { el.innerHTML='<div class="empty-state">Aucune notification.</div>'; return; }
+  el.innerHTML = notifs.map(n=>`
+    <div class="notif-item" onclick="markNotifRead('${n.id}')">
+      ${!n.read?'<div class="notif-dot"></div>':'<div style="width:7px"></div>'}
+      <span style="font-size:22px;line-height:1;flex-shrink:0">${esc(n.icon||'📌')}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:${n.read?'400':'600'}">${esc(n.text)}</div>
+        <div class="t-sm" style="margin-top:3px">${timeAgo(n.ts)}</div>
+      </div>
+    </div>`).join('');
+}
+
+async function markNotifRead(id) {
+  if (!A.user||!id) return;
+  await db.ref(`notifications/${A.user.uid}/${id}/read`).set(true);
+}
+
+async function markAllNotifsRead() {
+  if (!A.user) return;
+  const snap = await db.ref(`notifications/${A.user.uid}`).once('value');
+  const updates={};
+  snap.forEach(c=>{updates[`${c.key}/read`]=true;});
+  await db.ref(`notifications/${A.user.uid}`).update(updates);
+  toast('Tout marqué lu.','success');
+}
+
+function updateNotifBadge() {
+  const badge = document.getElementById('navNotifBadge');
+  const sbBadge = document.getElementById('sbNotifCount');
+  if (badge) { badge.textContent=A.notifCount; badge.classList.toggle('show',A.notifCount>0); }
+  if (sbBadge) { sbBadge.textContent=A.notifCount; sbBadge.style.display=A.notifCount>0?'inline-flex':'none'; }
+}
+
+/* ═══ SETTINGS ═══ */
+async function saveDisplayName() {
+  if (!A.user) return;
+  const name = document.getElementById('settingsName').value.trim();
+  if (!name) { toast('Le nom ne peut pas être vide.','error'); return; }
+  try {
+    await db.ref(`players/${A.user.uid}/name`).set(name);
+    await db.ref(`users/${A.user.uid}/displayName`).set(name);
+    await auth.currentUser.updateProfile({displayName:name});
+    if (A.profile) A.profile.name=name;
+    renderAvatar('navAvatar',A.profile,'av-32');
+    toast('Nom mis à jour !','success');
+  } catch(e) { toast('Erreur: '+e.message,'error'); }
+}
+
+/* ═══ DISCOVER ═══ */
+function loadDiscoverPlayers() {
+  db.ref('players').once('value', snap => {
+    A.discoverPlayers=[];
+    snap.forEach(c=>{const p={id:c.key,...c.val()};if(p.name)A.discoverPlayers.push(p);});
+    A.discoverPlayers.sort((a,b)=>(b.rating||0)-(a.rating||0));
+    applyDiscoverFilters();
+  });
+}
+
+function applyDiscoverFilters() {
+  const search=(document.getElementById('discSearch')?.value||'').toLowerCase();
+  const pos=document.getElementById('discPosFilter')?.value||'';
+  const country=document.getElementById('discCountryFilter')?.value||'';
+  const age=A.ageFilter||'';
+  let filtered=A.discoverPlayers.filter(p=>{
+    if(search&&!p.name.toLowerCase().includes(search))return false;
+    if(pos&&p.position!==pos)return false;
+    if(country&&p.country!==country)return false;
+    if(age==='u18'&&(p.age<=0||p.age>17))return false;
+    if(age==='u21'&&(p.age<=0||p.age>20))return false;
+    if(age==='u25'&&(p.age<=0||p.age>24))return false;
+    if(age==='senior'&&p.age<25)return false;
+    return true;
+  });
+  const count=document.getElementById('discCount');
+  if(count)count.textContent=`${filtered.length} joueur${filtered.length!==1?'s':''} trouvé${filtered.length!==1?'s':''}`;
+  const grid=document.getElementById('discContent');
+  if(!grid)return;
+  if(!filtered.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1">Aucun joueur ne correspond.</div>';return;}
+  // Pro users see full cards, free users see locked cards
+  const isPro=canDo('canViewFullProfile');
+  grid.innerHTML=filtered.map((p,i)=>playerCardHTML(p,!isPro&&i>2)).join('');
+}
+
+function selectChip(el, group) {
+  document.querySelectorAll(`#discChips .chip`).forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  A.ageFilter=el.dataset.age||'';
+  applyDiscoverFilters();
+}
+
+function playerCardHTML(p, locked=false) {
+  const av=renderAvatarInline(p,'av-56');
+  const posColor={Goalkeeper:'badge-gold',Defender:'badge-blue',Midfielder:'badge-green',Winger:'badge-purple',Striker:'badge-red'};
+  const posClass=posColor[p.position]||'badge-white';
+  const certBadge=p.certificationStatus==='verified'?'<span class="badge badge-green" style="font-size:9px">🏟</span>':'';
+  const planBadge=p.plan==='pro'?'<span class="plan-badge-pro">⭐</span>':p.plan==='club'||p.plan==='elite'?'<span class="plan-badge-elite">👑</span>':'';
+
+  if (locked) {
+    // Blurred card for free users — show name + rating only
+    return `
+      <div class="player-card player-card-locked" onclick="showUpgradeModal('Voir ce profil 🔒','Passez Pro pour voir le profil complet de ${esc(p.name)}, ses statistiques détaillées, ses vidéos et le contacter directement.')">
+        <div class="pc-header">
+          ${av}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:700;margin-bottom:3px">${esc(p.name)}</div>
+            <div style="display:flex;gap:5px">
+              ${p.position?`<span class="badge ${posClass}">${esc(p.position)}</span>`:''}
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:22px;font-weight:900">${p.rating||50}</div>
+            <div class="t-xs">Rating</div>
+          </div>
+        </div>
+        <div class="pc-stats">
+          <div class="pc-stat"><div class="pc-stat-val">—</div><div class="pc-stat-lbl">Buts</div></div>
+          <div class="pc-stat"><div class="pc-stat-val">—</div><div class="pc-stat-lbl">PD</div></div>
+          <div class="pc-stat"><div class="pc-stat-val">—</div><div class="pc-stat-lbl">Matchs</div></div>
+        </div>
+        <div class="player-card-lock-badge">
+          <div style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-lg);padding:12px 16px">
+            <div style="font-size:20px;margin-bottom:4px">🔒</div>
+            <div style="font-size:12px;font-weight:600;color:var(--white)">Pro requis</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="player-card" onclick="showPlayerModal(${JSON.stringify(JSON.stringify(p))})">
+      <div class="pc-header">
+        ${av}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px">${esc(p.name)}</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+            ${p.position?`<span class="badge ${posClass}">${esc(p.position)}</span>`:''}
+            ${p.verified?'<span class="badge badge-green" style="font-size:9px">✓</span>':''}
+            ${certBadge}${planBadge}
+          </div>
+          <div class="t-sm" style="margin-top:4px">${[p.city,p.country].filter(Boolean).join(', ')||'—'}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:22px;font-weight:900;letter-spacing:-.03em;line-height:1">${p.rating||50}</div>
+          <div class="t-xs">Rating</div>
+        </div>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><div class="pc-stat-val">${p.goals??'—'}</div><div class="pc-stat-lbl">Buts</div></div>
+        <div class="pc-stat"><div class="pc-stat-val">${p.assists??'—'}</div><div class="pc-stat-lbl">PD</div></div>
+        <div class="pc-stat"><div class="pc-stat-val">${p.matches??'—'}</div><div class="pc-stat-lbl">Matchs</div></div>
+      </div>
+      ${p.age||p.height?`<div class="t-sm" style="margin-top:10px">${[p.age?p.age+' ans':'',p.height?p.height+' cm':'',p.foot?p.foot+' foot':''].filter(Boolean).join(' · ')}</div>`:''}
+    </div>`;
+}
+
+function showPlayerModal(jsonStr) {
+  const p = JSON.parse(jsonStr);
+  const canViewFull = canDo('canViewFullProfile');
+  const canContact = canDo('canContact');
+  const body = document.getElementById('modalPlayerBody');
+  if (!body) return;
+  const av = renderAvatarInline(p,'av-80');
+  const posColor={Goalkeeper:'badge-gold',Defender:'badge-blue',Midfielder:'badge-green',Winger:'badge-purple',Striker:'badge-red'};
+  const posClass=posColor[p.position]||'badge-white';
+
+  const statsSection = canViewFull ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:16px">
+      <div class="pc-stat"><div class="pc-stat-val">${p.goals??'—'}</div><div class="pc-stat-lbl">Buts</div></div>
+      <div class="pc-stat"><div class="pc-stat-val">${p.assists??'—'}</div><div class="pc-stat-lbl">PD</div></div>
+      <div class="pc-stat"><div class="pc-stat-val">${p.matches??'—'}</div><div class="pc-stat-lbl">Matchs</div></div>
+      <div class="pc-stat"><div class="pc-stat-val">${p.minutesPlayed||'—'}</div><div class="pc-stat-lbl">Minutes</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:${p.bio?'16px':'0'}">
+      ${p.age?`<div style="padding:10px;background:var(--surface2);border-radius:var(--r)"><div class="t-xs">Âge</div><div style="font-weight:600;margin-top:2px">${p.age} ans</div></div>`:''}
+      ${p.height?`<div style="padding:10px;background:var(--surface2);border-radius:var(--r)"><div class="t-xs">Taille</div><div style="font-weight:600;margin-top:2px">${p.height} cm</div></div>`:''}
+      ${p.weight?`<div style="padding:10px;background:var(--surface2);border-radius:var(--r)"><div class="t-xs">Poids</div><div style="font-weight:600;margin-top:2px">${p.weight} kg</div></div>`:''}
+      ${p.foot?`<div style="padding:10px;background:var(--surface2);border-radius:var(--r)"><div class="t-xs">Pied fort</div><div style="font-weight:600;margin-top:2px">${esc(p.foot)}</div></div>`:''}
+    </div>
+    ${p.bio?`<div style="padding:14px;background:var(--surface2);border-radius:var(--r);margin-bottom:16px"><div class="t-xs" style="margin-bottom:6px">À propos</div><p class="t-body" style="font-size:13px">${esc(p.bio)}</p></div>`:''}` :
+  `<div style="padding:16px;background:rgba(59,130,246,.08);border:1px solid var(--blue-border);border-radius:var(--r);margin-bottom:16px;text-align:center">
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">🔒 Profil complet réservé aux abonnés Pro</div>
+    <div class="t-sm" style="margin-bottom:10px">Stats détaillées, physique, bio et vidéos</div>
+    <button class="btn btn-blue btn-sm" onclick="closeModal('modalPlayer');showTab('subscription')">Voir les plans →</button>
+  </div>`;
+
+  const contactSection = A.user ?
+    (canContact ?
+      `<button class="btn btn-primary" style="flex:1;justify-content:center" onclick="contactPlayer('${esc(p.id||'')}','${esc(p.name)}')">✉️ Contacter le joueur</button>` :
+      `<button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="closeModal('modalPlayer');showUpgradeModal('Contacter les joueurs ✉️','Passez Pro pour contacter directement ${esc(p.name)} et tous les joueurs de la plateforme.')">🔒 Contacter (Pro requis)</button>`)
+    : `<button class="btn btn-primary" style="flex:1;justify-content:center" onclick="goTo('register');closeModal('modalPlayer')">Rejoindre pour contacter</button>`;
+
+  body.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
+      ${av}
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+          <span style="font-size:18px;font-weight:700">${esc(p.name)}</span>
+          ${p.verified?'<span class="badge badge-green">✓</span>':''}
+          ${p.certificationStatus==='verified'?'<span class="badge badge-blue">🏟</span>':''}
+          ${p.plan==='pro'?'<span class="plan-badge-pro">⭐ Pro</span>':p.plan==='club'||p.plan==='elite'?'<span class="plan-badge-elite">👑</span>':''}
+        </div>
+        ${p.position?`<span class="badge ${posClass}" style="margin-bottom:6px">${esc(p.position)}</span>`:''}
+        <div class="t-sm">${[p.city,p.country].filter(Boolean).join(', ')||'—'}</div>
+        ${p.club?`<div class="t-sm" style="margin-top:2px">🏟 ${esc(p.club)}</div>`:''}
+      </div>
+      <div style="text-align:center;padding:8px 14px;background:var(--surface2);border-radius:var(--r)">
+        <div style="font-size:28px;font-weight:900;letter-spacing:-.03em">${p.rating||50}</div>
+        <div class="t-xs">Rating</div>
+      </div>
+    </div>
+    ${statsSection}
+    <div id="playerModalVideos"></div>
+    <div style="margin-top:16px;display:flex;gap:8px">${contactSection}</div>`;
+
+  openModal('modalPlayer');
+
+  if (p.id) {
+    // Increment profile views
+    db.ref(`players/${p.id}/profileViews`).transaction(v=>(v||0)+1);
+    // Load videos (only for Pro+)
+    if (canViewFull) {
+      db.ref(`videos/${p.id}`).orderByChild('ts').limitToLast(3).once('value', snap=>{
+        const videos=[];
+        snap.forEach(c=>videos.push({id:c.key,...c.val()}));
+        videos.reverse();
+        const vidEl=document.getElementById('playerModalVideos');
+        if(vidEl&&videos.length){
+          vidEl.innerHTML=`<div class="t-h4" style="margin-bottom:10px">Vidéos (${videos.length})</div><div style="display:flex;flex-direction:column;gap:8px">${videos.map(v=>`
+            <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--surface2);border-radius:var(--r);cursor:pointer" onclick="playVideo('${esc(v.id||'')}','${esc(v.uid||p.id||'')}','${esc(v.embedUrl||v.url||'')}','${esc(v.title||'')}')">
+              ${v.thumbnail?`<img src="${esc(v.thumbnail)}" style="width:60px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0" alt="">`:`<div style="width:60px;height:40px;background:var(--surface3);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px">▶</div>`}
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(v.title)}</div>
+                <div class="t-sm">${esc(v.type||'')} · ${timeAgo(v.ts)}</div>
+              </div>
+            </div>`).join('')}</div>`;
+        }
+      });
+    }
+  }
+}
+
+/* ═══ LANDING ═══ */
+function loadLandingStats() {
+  db.ref('players').once('value', snap=>setText('statPlayers',snap.numChildren().toLocaleString()));
+  db.ref('users').orderByChild('role').equalTo('club').once('value', snap=>setText('statClubs',Math.max(snap.numChildren(),1).toLocaleString()));
+}
+
+function loadLandingPlayers() {
+  const grid=document.getElementById('landingPlayerGrid'); if(!grid)return;
+  db.ref('players').orderByChild('rating').limitToLast(6).once('value', snap=>{
+    const players=[];
+    snap.forEach(c=>{const p={id:c.key,...c.val()};if(p.name)players.push(p);});
+    players.sort((a,b)=>(b.rating||0)-(a.rating||0));
+    if(!players.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1">Soyez le premier à rejoindre ELEVN !</div>';return;}
+    // Landing page: show first 3 full, rest locked
+    grid.innerHTML=players.map((p,i)=>playerCardHTML(p,i>2&&!canDo('canViewFullProfile'))).join('');
+  });
+}
+
+/* ═══ ADMIN ═══ */
+function adminTab(tab, el) {
+  document.querySelectorAll('.admin-si').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  const main = document.getElementById('adminContent');
+  if (!main) return;
+
+  if (tab==='overview') {
+    main.innerHTML='<div class="t-h2" style="margin-bottom:20px">Vue d\'ensemble</div><div class="stat-grid" id="adminStats"></div>';
+    Promise.all([db.ref('players').once('value'),db.ref('users').once('value'),db.ref('videos').once('value'),db.ref('certifications').once('value')]).then(([pS,uS,vS,cS])=>{
+      let totalVideos=0; vS.forEach(u=>{totalVideos+=u.numChildren();});
+      document.getElementById('adminStats').innerHTML=`
+        <div class="stat-card"><div class="stat-val">${pS.numChildren()}</div><div class="stat-lbl">Joueurs</div></div>
+        <div class="stat-card"><div class="stat-val">${uS.numChildren()}</div><div class="stat-lbl">Utilisateurs</div></div>
+        <div class="stat-card"><div class="stat-val">${totalVideos}</div><div class="stat-lbl">Vidéos</div></div>
+        <div class="stat-card"><div class="stat-val">${cS.numChildren()}</div><div class="stat-lbl">Certifications en attente</div></div>`;
+    });
+
+  } else if (tab==='users') {
+    main.innerHTML='<div class="t-h2" style="margin-bottom:18px">Utilisateurs</div><div id="adminUserTable"><div class="t-sm">Chargement...</div></div>';
+    db.ref('users').once('value', snap=>{
+      const users=[];snap.forEach(c=>users.push({id:c.key,...c.val()}));
+      users.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      const table=document.getElementById('adminUserTable');if(!table)return;
+      if(!users.length){table.innerHTML='<div class="t-sm">Aucun utilisateur.</div>';return;}
+      table.innerHTML=`<div style="overflow-x:auto"><table>
+        <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Plan</th><th>Inscrit</th><th>Actions</th></tr></thead>
+        <tbody>${users.map(u=>`
+          <tr>
+            <td style="font-weight:600">${esc(u.displayName||'—')}</td>
+            <td class="t-sm">${esc(u.email||'—')}</td>
+            <td><span class="badge badge-white">${esc(u.role||'player')}</span></td>
+            <td><span class="badge ${u.plan==='pro'?'badge-blue':u.plan==='club'||u.plan==='elite'?'badge-gold':'badge-white'}">${esc(u.plan||'free')}</span></td>
+            <td class="t-sm">${u.createdAt?new Date(u.createdAt).toLocaleDateString('fr-FR'):'—'}</td>
+            <td style="display:flex;gap:6px"><button class="btn btn-success btn-sm" onclick="adminVerifyUser('${u.id}')">✓ Vérifier</button><button class="btn btn-blue btn-sm" onclick="adminSetPlan('${u.id}')">Plan</button></td>
+          </tr>`).join('')}
+        </tbody></table></div>`;
+    });
+
+  } else if (tab==='certifications') {
+    main.innerHTML='<div class="t-h2" style="margin-bottom:18px">Demandes de certification</div><div id="adminCertList"><div class="t-sm">Chargement...</div></div>';
+    db.ref('certifications').once('value', snap=>{
+      const certs=[];snap.forEach(c=>certs.push({id:c.key,...c.val()}));
+      certs.sort((a,b)=>(b.submittedAt||0)-(a.submittedAt||0));
+      const el=document.getElementById('adminCertList');if(!el)return;
+      if(!certs.length){el.innerHTML='<div class="empty-state">Aucune demande.</div>';return;}
+      el.innerHTML=certs.map(c=>`
+        <div class="card" style="margin-bottom:14px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:15px;margin-bottom:4px">${esc(c.playerName||c.id)}</div>
+              <div class="t-sm" style="margin-bottom:2px">🏟 ${esc(c.clubName||'—')}</div>
+              ${c.licenseNum?`<div class="t-sm">🪪 Licence: ${esc(c.licenseNum)}</div>`:''}
+              ${c.season?`<div class="t-sm">📅 ${esc(c.season)}</div>`:''}
+              ${c.comment?`<div class="t-sm" style="margin-top:4px">${esc(c.comment)}</div>`:''}
+              <div class="t-sm" style="margin-top:4px">✍️ Signature: ${esc(c.signatureName||'—')}</div>
+              <div class="t-xs" style="margin-top:6px">${c.submittedAt?new Date(c.submittedAt).toLocaleString('fr-FR'):'—'}</div>
+              <span class="badge ${c.status==='pending'?'badge-gold':c.status==='verified'?'badge-green':'badge-red'}" style="margin-top:8px">${c.status==='pending'?'⏳ En attente':c.status==='verified'?'✅ Vérifié':'❌ Refusé'}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+              ${c.docData&&c.docData.startsWith('data:image')?`<img src="${esc(c.docData)}" style="max-width:180px;max-height:130px;border-radius:var(--r);border:1px solid var(--border);cursor:pointer" onclick="window.open(this.src)" alt="Doc">`:c.docData?`<div style="font-size:12px;color:var(--white35)">📄 PDF reçu</div>`:''}
+              ${c.status!=='verified'?`<button class="btn btn-success btn-sm" onclick="adminApproveCert('${c.id}','${esc(c.clubName||'')}')">✓ Approuver</button>`:''}
+              ${c.status==='pending'?`<button class="btn btn-danger btn-sm" onclick="adminRejectCert('${c.id}')">✕ Refuser</button>`:''}
+            </div>
+          </div>
+        </div>`).join('');
+    });
+
+  } else if (tab==='subscriptions') {
+    main.innerHTML='<div class="t-h2" style="margin-bottom:18px">Abonnements PayPal</div><div id="adminSubList"><div class="t-sm">Chargement...</div></div>';
+    db.ref('players').once('value', snap=>{
+      const players=[];
+      snap.forEach(c=>{const p={id:c.key,...c.val()};if(p.plan&&p.plan!=='free')players.push(p);});
+      const el=document.getElementById('adminSubList');if(!el)return;
+      if(!players.length){el.innerHTML='<div class="empty-state">Aucun abonné payant.</div>';return;}
+      const revenue={'pro':90,'club':500,'elite':1000};
+      const total=players.reduce((s,p)=>s+(revenue[p.plan]||0),0);
+      el.innerHTML=`<div class="card" style="margin-bottom:20px"><div class="t-h4" style="margin-bottom:4px">MRR Total</div><div style="font-size:32px;font-weight:900;color:var(--green-light)">${total.toLocaleString()} €/mois</div><div class="t-sm">${players.length} abonné${players.length>1?'s':''}</div></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Joueur</th><th>Plan</th><th>PayPal Sub ID</th><th>Pays</th><th>Actions</th></tr></thead>
+        <tbody>${players.map(p=>`
+          <tr>
+            <td style="font-weight:600">${esc(p.name||'—')}</td>
+            <td><span class="badge ${p.plan==='pro'?'badge-blue':'badge-gold'}">${esc(p.plan)} — ${revenue[p.plan]||0}€</span></td>
+            <td class="t-sm" style="font-family:monospace;font-size:11px">${esc(p.paypalSubscriptionId||'—')}</td>
+            <td class="t-sm">${esc(p.country||'—')}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="adminCancelSub('${p.id}')">Annuler</button></td>
+          </tr>`).join('')}
+        </tbody></table></div>`;
+    });
+
+  } else if (tab==='videos-admin') {
+    main.innerHTML='<div class="t-h2" style="margin-bottom:18px">Vidéos</div><div id="adminVideoList"><div class="t-sm">Chargement...</div></div>';
+    db.ref('videos').once('value', snap=>{
+      const all=[];
+      snap.forEach(u=>{u.forEach(v=>all.push({id:v.key,uid:u.key,...v.val()}));});
+      all.sort((a,b)=>(b.ts||0)-(a.ts||0));
+      const el=document.getElementById('adminVideoList');if(!el)return;
+      if(!all.length){el.innerHTML='<div class="empty-state">Aucune vidéo.</div>';return;}
+      el.innerHTML=`<div style="overflow-x:auto"><table>
+        <thead><tr><th>Titre</th><th>Joueur</th><th>Type</th><th>Source</th><th>Vues</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody>${all.map(v=>`
+          <tr>
+            <td style="font-weight:600"><a href="${esc(v.url||'')}" target="_blank" style="color:var(--blue-light)">${esc(v.title||'—')}</a></td>
+            <td class="t-sm">${esc(v.playerName||v.uid||'—')}</td>
+            <td><span class="badge badge-white">${esc(v.type||'—')}</span></td>
+            <td class="t-sm">${esc(v.source||'—')}</td>
+            <td>${v.views||0}</td>
+            <td class="t-sm">${v.ts?new Date(v.ts).toLocaleDateString('fr-FR'):'—'}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="adminDeleteVideo('${v.uid}','${v.id}')">Suppr.</button></td>
+          </tr>`).join('')}
+        </tbody></table></div>`;
+    });
+
+  } else if (tab==='messages-admin') {
+    main.innerHTML='<div class="t-h2" style="margin-bottom:18px">Messages</div><div id="adminMsgList"><div class="t-sm">Chargement...</div></div>';
+    db.ref('messages').once('value', snap=>{
+      let total=0;
+      snap.forEach(u=>{u.forEach(thread=>{total+=thread.numChildren();});});
+      document.getElementById('adminMsgList').innerHTML=`<div class="stat-card" style="max-width:200px"><div class="stat-val">${total}</div><div class="stat-lbl">Messages totaux</div></div>`;
+    });
+  }
+}
+
+async function adminVerifyUser(uid) {
+  await db.ref(`players/${uid}/verified`).set(true);
+  await db.ref(`users/${uid}/verified`).set(true);
+  await pushNotif(uid,{type:'verified',icon:'✅',text:'Votre profil ELEVN a été vérifié !',read:false,ts:Date.now()});
+  toast('Joueur vérifié !','success');
+  document.querySelector('.admin-si.active')?.click();
+}
+
+async function adminSetPlan(uid) {
+  const plan = prompt('Nouveau plan (free/pro/club/elite):');
+  if (!['free','pro','club','elite'].includes(plan)) { toast('Plan invalide','error'); return; }
+  await db.ref(`players/${uid}/plan`).set(plan);
+  await db.ref(`users/${uid}/plan`).set(plan);
+  await pushNotif(uid,{type:'subscription',icon:'⭐',text:`Votre plan a été mis à jour vers ${plan} par l'équipe ELEVN.`,read:false,ts:Date.now()});
+  toast(`Plan mis à jour: ${plan}`,'success');
+  document.querySelector('.admin-si.active')?.click();
+}
+
+async function adminApproveCert(uid, clubName) {
+  await db.ref(`certifications/${uid}/status`).set('verified');
+  await db.ref(`players/${uid}/certificationStatus`).set('verified');
+  await db.ref(`players/${uid}/certificationClub`).set(clubName);
+  await db.ref(`players/${uid}/verified`).set(true);
+  await pushNotif(uid,{type:'certified',icon:'🏟',text:`Votre club "${clubName}" a été certifié sur ELEVN ! Le badge apparaît maintenant sur votre profil.`,read:false,ts:Date.now()});
+  toast('Certification approuvée !','success');
+  document.querySelector('.admin-si.active')?.click();
+}
+
+async function adminRejectCert(uid) {
+  if (!confirm('Refuser cette certification ?')) return;
+  await db.ref(`certifications/${uid}/status`).set('rejected');
+  await db.ref(`players/${uid}/certificationStatus`).set('none');
+  await pushNotif(uid,{type:'cert-rejected',icon:'❌',text:'Votre demande de certification a été refusée. Soumettez un document plus lisible ou contactez le support.',read:false,ts:Date.now()});
+  toast('Certification refusée.','info');
+  document.querySelector('.admin-si.active')?.click();
+}
+
+async function initApp() {
+  try {
+    console.log('⚽ ELEVN initialized');
+
+    if (typeof updateGlobalStats === 'function') {
+      await updateGlobalStats();
+    }
+
+    if (typeof loadFeaturedPlayers === 'function') {
+      await loadFeaturedPlayers();
+    }
+
+    if (typeof loadRankings === 'function') {
+      await loadRankings();
+    }
+
+    if (typeof checkAuth === 'function') {
+      await checkAuth();
+    }
+
+    const loader = document.getElementById('loadingScreen');
+    if (loader) {
+      setTimeout(() => {
+        loader.classList.add('hidden');
+      }, 500);
+    }
+
+  } catch (error) {
+    console.error('ELEVN startup error:', error);
+
+    const loader = document.getElementById('loadingScreen');
+    if (loader) loader.classList.add('hidden');
+  }
+}
+
+/* ========= GENERIC HELPERS ========= */
+
+function showToast(message, type = 'info') {
+  const stack = document.getElementById('toastStack');
+  if (!stack) return;
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+
+  toast.innerHTML = `
+    <span>${message}</span>
+  `;
+
+  stack.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('out');
+    setTimeout(() => toast.remove(), 250);
+  }, 3000);
+}
+
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) modal.classList.add('open');
+}
+
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) modal.classList.remove('open');
+}
+
+function closeModalOnBg(event, id) {
+  if (event.target.id === id) {
+    closeModal(id);
+  }
+}
+
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+  });
+
+  const target = document.getElementById(`page-${page}`);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+}
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+
+  if (el) {
+    el.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+}
+
+/* ========= PLACEHOLDERS ========= */
+
+async function updateGlobalStats() {
+  const p = document.getElementById('statPlayers');
+  const c = document.getElementById('statClubs');
+
+  if (p) p.textContent = '12K+';
+  if (c) c.textContent = '850+';
+}
+
+async function loadFeaturedPlayers() {
+  const grid = document.getElementById('landingPlayerGrid');
+
+  if (!grid) return;
+
+  grid.innerHTML = `
+    <div class="player-card">
+      <div class="t-h4">Future Star</div>
+      <div class="t-sm">Midfielder • France</div>
+    </div>
+
+    <div class="player-card">
+      <div class="t-h4">Rising Talent</div>
+      <div class="t-sm">Striker • Brazil</div>
+    </div>
+
+    <div class="player-card">
+      <div class="t-h4">Top Prospect</div>
+      <div class="t-sm">Defender • Spain</div>
+    </div>
+  `;
+}
+
+async function loadRankings() {
+  return true;
+}
+
+async function checkAuth() {
+  return true;
+}
+
+async function signInGoogle() {
+  showToast('Connexion Google bientôt disponible');
+}
+
+async function saveProfile() {
+  showToast('Profil sauvegardé');
+  closeModal('modalEditProfile');
+}
+
+async function uploadVideo() {
+  showToast('Vidéo ajoutée');
+  closeModal('modalUploadVideo');
+}
+
+function triggerPhotoUpload() {
+  document.getElementById('photoInput')?.click();
+}
+
+function handlePhotoUpload() {
+  showToast('Photo mise à jour');
+}
+
+function setVideoSource(type) {
+  document.querySelectorAll('[id^="vsrc-"]').forEach(btn => {
+    btn.classList.remove('on');
+  });
+
+  const active = document.getElementById(`vsrc-${type}`);
+  if (active) active.classList.add('on');
+}
+
+function previewVideoInput(url) {
+  const preview = document.getElementById('vt-preview');
+  const iframe = document.getElementById('vt-iframe');
+
+  if (!url || !preview || !iframe) return;
+
+  preview.style.display = 'block';
+  iframe.src = url;
+}
+
+/* ========= START ========= */
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await initApp();
+});
+
+/* ========= GLOBAL EXPORTS ========= */
+
+window.goTo = goTo;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.closeModalOnBg = closeModalOnBg;
+window.signInGoogle = signInGoogle;
+window.saveProfile = saveProfile;
+window.uploadVideo = uploadVideo;
+window.triggerPhotoUpload = triggerPhotoUpload;
+window.handlePhotoUpload = handlePhotoUpload;
+window.previewVideoInput = previewVideoInput;
+window.setVideoSource = setVideoSource;
+window.showToast = showToast;
+</script>
+
+</body>
+</html>
